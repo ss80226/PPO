@@ -1,0 +1,4 @@
+[default]
+project = ppo-atari
+entity = ss80226
+

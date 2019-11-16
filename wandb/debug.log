@@ -1,0 +1,68 @@
+2019-11-16 17:29:10,888 DEBUG   MainThread:7363 [wandb_config.py:_load_defaults():110] no defaults not found in config-defaults.yaml
+2019-11-16 17:29:10,892 DEBUG   MainThread:7363 [cmd.py:execute():724] Popen(['git', 'cat-file', '--batch-check'], cwd=/home/ssbl/Desktop/tmp/PPO, universal_newlines=False, shell=None, istream=<valid stream>)
+2019-11-16 17:29:10,895 DEBUG   MainThread:7363 [cmd.py:execute():724] Popen(['git', 'rev-parse', '--show-toplevel'], cwd=/home/ssbl/Desktop/tmp/PPO, universal_newlines=False, shell=None, istream=None)
+2019-11-16 17:29:10,897 DEBUG   MainThread:7363 [cmd.py:execute():724] Popen(['git', 'status', '--porcelain', '--untracked-files'], cwd=/home/ssbl/Desktop/tmp/PPO, universal_newlines=False, shell=None, istream=None)
+2019-11-16 17:29:10,906 DEBUG   MainThread:7363 [run_manager.py:__init__():535] Initialized sync for ppo-atari/47pxrwq3
+2019-11-16 17:29:10,908 INFO    MainThread:7363 [run_manager.py:wrap_existing_process():1131] wrapping existing process 7355
+2019-11-16 17:29:10,908 WARNING MainThread:7363 [io_wrap.py:register():104] SIGWINCH handler was not None: <Handlers.SIG_DFL: 0>
+2019-11-16 17:29:10,909 DEBUG   MainThread:7363 [connectionpool.py:_new_conn():959] Starting new HTTPS connection (1): pypi.org:443
+2019-11-16 17:29:11,055 DEBUG   MainThread:7363 [connectionpool.py:_make_request():437] https://pypi.org:443 "GET /pypi/wandb/json HTTP/1.1" 200 37669
+2019-11-16 17:29:11,097 INFO    MainThread:7363 [run_manager.py:init_run():916] system metrics and metadata threads started
+2019-11-16 17:29:11,097 INFO    MainThread:7363 [run_manager.py:init_run():950] upserting run before process can begin, waiting at most 10 seconds
+2019-11-16 17:29:11,104 DEBUG   Thread-14 :7363 [connectionpool.py:_new_conn():959] Starting new HTTPS connection (1): api.wandb.ai:443
+2019-11-16 17:29:11,353 DEBUG   Thread-14 :7363 [connectionpool.py:_make_request():437] https://api.wandb.ai:443 "POST /graphql HTTP/1.1" 200 517
+2019-11-16 17:29:11,365 INFO    Thread-14 :7363 [run_manager.py:_upsert_run():1035] saving patches
+2019-11-16 17:29:11,366 DEBUG   Thread-14 :7363 [cmd.py:execute():724] Popen(['git', 'rev-parse', '--show-toplevel'], cwd=/home/ssbl/Desktop/tmp/PPO, universal_newlines=False, shell=None, istream=None)
+2019-11-16 17:29:11,378 DEBUG   Thread-14 :7363 [cmd.py:execute():724] Popen(['git', 'diff', '--cached', '--abbrev=40', '--full-index', '--raw'], cwd=/home/ssbl/Desktop/tmp/PPO, universal_newlines=False, shell=None, istream=None)
+2019-11-16 17:29:11,392 DEBUG   Thread-14 :7363 [cmd.py:execute():724] Popen(['git', 'diff', '--abbrev=40', '--full-index', '--raw'], cwd=/home/ssbl/Desktop/tmp/PPO, universal_newlines=False, shell=None, istream=None)
+2019-11-16 17:29:11,410 DEBUG   Thread-14 :7363 [cmd.py:execute():724] Popen(['git', 'merge-base', 'HEAD', 'fd3e56e2f18487b750afa9d91f9a5bc308453614'], cwd=/home/ssbl/Desktop/tmp/PPO, universal_newlines=False, shell=None, istream=None)
+2019-11-16 17:29:11,420 INFO    Thread-14 :7363 [run_manager.py:_upsert_run():1039] saving pip packages
+2019-11-16 17:29:11,421 INFO    Thread-14 :7363 [run_manager.py:_upsert_run():1041] initializing streaming files api
+2019-11-16 17:29:11,422 INFO    Thread-14 :7363 [run_manager.py:_upsert_run():1048] unblocking file change observer, beginning sync with W&B servers
+2019-11-16 17:29:11,422 INFO    MainThread:7363 [run_manager.py:wrap_existing_process():1148] informing user process we are ready to proceed
+2019-11-16 17:29:11,427 INFO    MainThread:7363 [run_manager.py:_sync_etc():1255] entering loop for messages from user process
+2019-11-16 17:29:11,428 DEBUG   Thread-15 :7363 [connectionpool.py:_new_conn():959] Starting new HTTPS connection (1): api.wandb.ai:443
+2019-11-16 17:29:11,639 DEBUG   Thread-15 :7363 [connectionpool.py:_make_request():437] https://api.wandb.ai:443 "POST /graphql HTTP/1.1" 200 46
+2019-11-16 17:29:11,891 INFO    Thread-3  :7363 [run_manager.py:_on_file_modified():682] file/dir modified: /home/ssbl/Desktop/tmp/PPO/wandb/run-20191116_092910-47pxrwq3/config.yaml
+2019-11-16 17:29:11,894 DEBUG   Thread-3  :7363 [connectionpool.py:_new_conn():959] Starting new HTTPS connection (1): api.wandb.ai:443
+2019-11-16 17:29:12,112 DEBUG   Thread-3  :7363 [connectionpool.py:_make_request():437] https://api.wandb.ai:443 "POST /graphql HTTP/1.1" 200 565
+2019-11-16 17:29:12,114 INFO    Thread-3  :7363 [run_manager.py:_on_file_created():671] file/dir created: /home/ssbl/Desktop/tmp/PPO/wandb/run-20191116_092910-47pxrwq3/output.log
+2019-11-16 17:29:12,115 INFO    Thread-3  :7363 [run_manager.py:_on_file_created():671] file/dir created: /home/ssbl/Desktop/tmp/PPO/wandb/run-20191116_092910-47pxrwq3/wandb-metadata.json
+2019-11-16 17:29:12,115 INFO    Thread-3  :7363 [run_manager.py:_on_file_created():671] file/dir created: /home/ssbl/Desktop/tmp/PPO/wandb/run-20191116_092910-47pxrwq3/requirements.txt
+2019-11-16 17:29:13,616 DEBUG   Thread-7  :7363 [connectionpool.py:_new_conn():959] Starting new HTTPS connection (1): api.wandb.ai:443
+2019-11-16 17:29:13,891 DEBUG   Thread-16 :7363 [connectionpool.py:_new_conn():959] Starting new HTTPS connection (1): api.wandb.ai:443
+2019-11-16 17:29:13,892 INFO    Thread-3  :7363 [run_manager.py:_on_file_modified():682] file/dir modified: /home/ssbl/Desktop/tmp/PPO/wandb/run-20191116_092910-47pxrwq3/output.log
+2019-11-16 17:29:13,899 DEBUG   Thread-7  :7363 [connectionpool.py:_make_request():437] https://api.wandb.ai:443 "POST /files/ss80226/ppo-atari/47pxrwq3/file_stream HTTP/1.1" 200 311
+2019-11-16 17:29:13,992 DEBUG   Thread-17 :7363 [connectionpool.py:_new_conn():959] Starting new HTTPS connection (1): api.wandb.ai:443
+2019-11-16 17:29:14,092 DEBUG   Thread-18 :7363 [connectionpool.py:_new_conn():959] Starting new HTTPS connection (1): api.wandb.ai:443
+2019-11-16 17:29:14,098 DEBUG   Thread-16 :7363 [connectionpool.py:_make_request():437] https://api.wandb.ai:443 "POST /graphql HTTP/1.1" 200 741
+2019-11-16 17:29:14,102 DEBUG   Thread-16 :7363 [connectionpool.py:_new_conn():959] Starting new HTTPS connection (1): storage.googleapis.com:443
+2019-11-16 17:29:14,199 DEBUG   Thread-17 :7363 [connectionpool.py:_make_request():437] https://api.wandb.ai:443 "POST /graphql HTTP/1.1" 200 765
+2019-11-16 17:29:14,202 DEBUG   Thread-17 :7363 [connectionpool.py:_new_conn():959] Starting new HTTPS connection (1): storage.googleapis.com:443
+2019-11-16 17:29:14,306 DEBUG   Thread-18 :7363 [connectionpool.py:_make_request():437] https://api.wandb.ai:443 "POST /graphql HTTP/1.1" 200 761
+2019-11-16 17:29:14,308 DEBUG   Thread-18 :7363 [connectionpool.py:_new_conn():959] Starting new HTTPS connection (1): storage.googleapis.com:443
+2019-11-16 17:29:14,439 DEBUG   Thread-16 :7363 [connectionpool.py:_make_request():437] https://storage.googleapis.com:443 "PUT /wandb-production.appspot.com/ss80226/ppo-atari/47pxrwq3/config.yaml?Expires=1573896613&GoogleAccessId=gorilla-cloud-storage%40wandb-production.iam.gserviceaccount.com&Signature=Elsw13mx8RDESnvYZfAs2ZrdLwqpIwdyCMKhFWyj1IJlOp6kc8wjc6C2gpHbS5NIlznSAGnvBVdNixjDfeVC6bWg9aI9YcFdbHEBmW2uPClXS1EnCNGzkhzQLxGJ7NpsB8wZe6pMT8mFyZBS%2BP4NNeeSGVuUHRYvWA7qNq8CxiqHIHpbF00quZHJCzpcuKVTt6umkdhXkH2vVMiU6moHhTLm7lie%2FLovBsY2xPXNL90v0CtlKCkaJ041oDucF0ZOWTs%2B%2F9uS15wYKLuTKnlHQUGO2bbuqh3ZRBA%2FJOu9gOaXPDk9vkUGah%2BGq2Mw8Qf9eJcqETttlu2Mgjof%2Fh5N8w%3D%3D HTTP/1.1" 200 0
+2019-11-16 17:29:14,623 DEBUG   Thread-17 :7363 [connectionpool.py:_make_request():437] https://storage.googleapis.com:443 "PUT /wandb-production.appspot.com/ss80226/ppo-atari/47pxrwq3/wandb-metadata.json?Expires=1573896614&GoogleAccessId=gorilla-cloud-storage%40wandb-production.iam.gserviceaccount.com&Signature=NJ8Z9qseSNaXDxqAZJ4EhTb1b2AtgRCjQR79vEbmvloUDztipWSkNkxwHZPajD%2BXq%2BPCNGMbqGIjWYTi27u0CIA7K1wKGX%2FYjqNITKpFaON%2Fs6y1FQERoR%2BrsOTbkcBqsT4NZN7C99fXytVDtGK4fZoW3fhCYria9fcy%2FMpcGddy5sXPUSb0OmGyoJwaFc7z%2FVttFscNmBxc9yLALFhVek5Tums2ylQ17poMK93kUd8qoLDFnW43JYsDaSSD6XYlI9e3HlDxFVaIqSm%2Fs3ksW3qwkwiRiqJxbOP3tU7UcQ6%2BFuiJCvw%2FAmEJKVenA5KHhHJCvMhGKR%2BsuLSQPArxSA%3D%3D HTTP/1.1" 200 0
+2019-11-16 17:29:14,892 INFO    Thread-3  :7363 [run_manager.py:_on_file_modified():682] file/dir modified: /home/ssbl/Desktop/tmp/PPO/wandb/run-20191116_092910-47pxrwq3/output.log
+2019-11-16 17:29:15,065 DEBUG   Thread-18 :7363 [connectionpool.py:_make_request():437] https://storage.googleapis.com:443 "PUT /wandb-production.appspot.com/ss80226/ppo-atari/47pxrwq3/requirements.txt?Expires=1573896614&GoogleAccessId=gorilla-cloud-storage%40wandb-production.iam.gserviceaccount.com&Signature=SuowUGXKyTM7TfioahDFJCoQ9T3Wn7WSmFzoGAUAKjDuLTU3LmHwYbaN1FXytPjyyV%2F%2BEs1fQNLXgYiMSK9N3bEKZ7NQgAosKlKsM87RE5mXhA9e0%2F3%2FcHH2eSSQeTY1Q3C1Zg2vspZhShY1dcuMei3kHp4D1MvGSrznzsTakaAxl4GpifQxSDFD2eEIlan%2BN8I1XzFw3us7QJByvjLyjP4ihO%2FrQxI2WdwVTUHKEItASW%2BPCR4nXh0VksnC9FBsmVn3uvBfMU0Re%2BMooYfWJprr9qXieUu0Ug3%2BnrzMyMADbUQR6gneTeK%2B9iQRYpgJKaRIsqYw59R2zpeJ%2Fr9S%2BQ%3D%3D HTTP/1.1" 200 0
+2019-11-16 17:29:15,893 INFO    Thread-3  :7363 [run_manager.py:_on_file_modified():682] file/dir modified: /home/ssbl/Desktop/tmp/PPO/wandb/run-20191116_092910-47pxrwq3/wandb-history.jsonl
+2019-11-16 17:29:15,893 INFO    Thread-3  :7363 [run_manager.py:_on_file_modified():682] file/dir modified: /home/ssbl/Desktop/tmp/PPO/wandb/run-20191116_092910-47pxrwq3/output.log
+2019-11-16 17:29:15,893 INFO    Thread-3  :7363 [run_manager.py:_on_file_created():671] file/dir created: /home/ssbl/Desktop/tmp/PPO/wandb/run-20191116_092910-47pxrwq3/wandb-summary.json
+2019-11-16 17:29:16,076 DEBUG   Thread-7  :7363 [connectionpool.py:_make_request():437] https://api.wandb.ai:443 "POST /files/ss80226/ppo-atari/47pxrwq3/file_stream HTTP/1.1" 200 311
+2019-11-16 17:29:16,337 INFO    MainThread:7363 [run_manager.py:_sync_etc():1311] process received interrupt signal, shutting down
+2019-11-16 17:29:16,337 INFO    MainThread:7363 [run_manager.py:_sync_etc():1364] closing log streams and sending exitcode to W&B
+2019-11-16 17:29:16,337 INFO    MainThread:7363 [run_manager.py:shutdown():1055] shutting down system stats and metadata service
+2019-11-16 17:29:16,893 INFO    Thread-3  :7363 [run_manager.py:_on_file_modified():682] file/dir modified: /home/ssbl/Desktop/tmp/PPO/wandb/run-20191116_092910-47pxrwq3/output.log
+2019-11-16 17:29:16,894 INFO    Thread-3  :7363 [run_manager.py:_on_file_created():671] file/dir created: /home/ssbl/Desktop/tmp/PPO/wandb/run-20191116_092910-47pxrwq3/wandb-events.jsonl
+2019-11-16 17:29:17,104 INFO    MainThread:7363 [run_manager.py:shutdown():1067] stopping streaming files and file change observer
+2019-11-16 17:29:17,894 INFO    Thread-3  :7363 [run_manager.py:_on_file_modified():682] file/dir modified: /home/ssbl/Desktop/tmp/PPO/wandb/run-20191116_092910-47pxrwq3/wandb-metadata.json
+2019-11-16 17:29:17,902 DEBUG   MainThread:7363 [connectionpool.py:_new_conn():959] Starting new HTTPS connection (1): api.wandb.ai:443
+2019-11-16 17:29:18,123 DEBUG   MainThread:7363 [connectionpool.py:_make_request():437] https://api.wandb.ai:443 "POST /graphql HTTP/1.1" 200 565
+2019-11-16 17:29:19,112 DEBUG   Thread-7  :7363 [connectionpool.py:_make_request():437] https://api.wandb.ai:443 "POST /files/ss80226/ppo-atari/47pxrwq3/file_stream HTTP/1.1" 200 311
+2019-11-16 17:29:19,922 DEBUG   Thread-21 :7363 [connectionpool.py:_new_conn():959] Starting new HTTPS connection (1): api.wandb.ai:443
+2019-11-16 17:29:20,109 DEBUG   Thread-7  :7363 [connectionpool.py:_make_request():437] https://api.wandb.ai:443 "POST /files/ss80226/ppo-atari/47pxrwq3/file_stream HTTP/1.1" 200 311
+2019-11-16 17:29:20,129 DEBUG   Thread-21 :7363 [connectionpool.py:_make_request():437] https://api.wandb.ai:443 "POST /graphql HTTP/1.1" 200 775
+2019-11-16 17:29:20,140 DEBUG   Thread-21 :7363 [connectionpool.py:_new_conn():959] Starting new HTTPS connection (1): storage.googleapis.com:443
+2019-11-16 17:29:20,291 DEBUG   Thread-7  :7363 [connectionpool.py:_make_request():437] https://api.wandb.ai:443 "POST /files/ss80226/ppo-atari/47pxrwq3/file_stream HTTP/1.1" 200 310
+2019-11-16 17:29:20,291 INFO    MainThread:7363 [run_manager.py:_sync_etc():1376] process only ran for 9 seconds, not syncing files
+2019-11-16 17:29:20,291 INFO    MainThread:7363 [47pxrwq3:run_manager.py:_sync_etc():1376] process only ran for 9 seconds, not syncing files
