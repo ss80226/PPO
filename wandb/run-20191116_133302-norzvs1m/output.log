@@ -1,0 +1,28 @@
+0
+-------------------------
+episode: 0, actor_loss: 67.18913269042969, critic_losss: 3186.818359375
+-------------------------
+episode: 0, actor_loss: 11.998129844665527, critic_losss: 3521.1103515625
+-------------------------
+episode: 0, actor_loss: 10.882767677307129, critic_losss: 3458.753173828125
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+-------------------------
+episode: 10, actor_loss: 2.4325151443481445, critic_losss: 30.936870574951172
+-------------------------
+episode: 10, actor_loss: 2.652982711791992, critic_losss: 28.35004234313965
+-------------------------
+episode: 10, actor_loss: 2.3823657035827637, critic_losss: 27.310705184936523
+0
+Traceback (most recent call last):
+  File "train.py", line 37, in <module>
+    mu_vector, sigma_vector = policy(state_tensor)
+KeyboardInterrupt

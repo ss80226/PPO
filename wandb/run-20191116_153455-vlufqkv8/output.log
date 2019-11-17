@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "train.py", line 54, in <module>
+    print(logp_tensor.cpu().numpy().shape)
+RuntimeError: Can't call numpy() on Variable that requires grad. Use var.detach().numpy() instead.

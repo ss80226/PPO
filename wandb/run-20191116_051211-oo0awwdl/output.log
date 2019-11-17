@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "train.py", line 18, in <module>
+    ppo = PPO(POLICY_ARGS)
+  File "/home/ssbl/Desktop/PPO/ppo.py", line 28, in __init__
+    self.policy = Network(POLICY_ARGS).to(DEVICE)
+  File "/home/ssbl/Desktop/PPO/network.py", line 12, in __init__
+    super(PPO, self).__init__()
+NameError: name 'PPO' is not defined

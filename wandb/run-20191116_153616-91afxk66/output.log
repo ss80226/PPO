@@ -1,0 +1,9 @@
+tensor([[ 1.6234,  1.2890,  1.7023,  1.1398],
+        [ 1.6473,  1.3597,  2.0280,  0.5492],
+        [-0.0103,  0.4904,  2.3109, -0.2505],
+        [ 1.7169,  0.9210,  2.3778,  0.9323]], device='cuda:0',
+       grad_fn=<SubBackward0>)
+Traceback (most recent call last):
+  File "train.py", line 54, in <module>
+    print(logp_tensor.cpu().numpy().shape)
+RuntimeError: Can't call numpy() on Variable that requires grad. Use var.detach().numpy() instead.

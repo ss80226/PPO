@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "train.py", line 22, in <module>
+    replay_buffer = ReplayBuffer(HORIZON)
+  File "/home/ssbl/Desktop/PPO/replay_buffer.py", line 23, in __init__
+    self.state_sample_batch = np.zeros(shape=(self.batch_size*self.env_size, 24))
+TypeError: 'float' object cannot be interpreted as an integer

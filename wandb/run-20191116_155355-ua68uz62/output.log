@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "train.py", line 77, in <module>
+    replay_buffer.update_advantage()
+  File "/home/ssbl/Desktop/PPO/replay_buffer.py", line 71, in update_advantage
+    if self.terminate_buffer[i][update_index] == 0 and update_index != self.size-1:
+IndexError: index 4 is out of bounds for axis 0 with size 4

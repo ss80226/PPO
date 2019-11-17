@@ -1,0 +1,22 @@
+tensor([[ 0.1169, -0.0920, -0.0098,  0.0549, -0.1337, -0.0063,  0.0495,  0.0060],
+        [ 0.1170, -0.0920, -0.0097,  0.0549, -0.1338, -0.0064,  0.0496,  0.0060],
+        [ 0.1171, -0.0921, -0.0095,  0.0550, -0.1340, -0.0066,  0.0498,  0.0059],
+        [ 0.1170, -0.0920, -0.0096,  0.0550, -0.1339, -0.0064,  0.0497,  0.0059]],
+       device='cuda:0', grad_fn=<AddmmBackward>)
+tensor([[ 0.1169, -0.0920, -0.0098,  0.0549, -0.1337, -0.0063,  0.0495,  0.0060],
+        [ 0.1170, -0.0920, -0.0097,  0.0549, -0.1338, -0.0064,  0.0496,  0.0060],
+        [ 0.1171, -0.0921, -0.0095,  0.0550, -0.1340, -0.0066,  0.0498,  0.0059],
+        [ 0.1170, -0.0920, -0.0096,  0.0550, -0.1339, -0.0064,  0.0497,  0.0059]],
+       device='cuda:0', grad_fn=<SliceBackward>)
+Traceback (most recent call last):
+  File "train.py", line 40, in <module>
+    action_tensor = policy.act(mu_vector, sigma_vector)
+  File "/home/ssbl/Desktop/PPO/network.py", line 36, in act
+    action_vector = torch.distributions.normal.Normal(mu_vector, sigma_vector).sample()
+  File "/home/ssbl/anaconda3/envs/ml/lib/python3.7/site-packages/torch/distributions/normal.py", line 44, in __init__
+    self.loc, self.scale = broadcast_all(loc, scale)
+  File "/home/ssbl/anaconda3/envs/ml/lib/python3.7/site-packages/torch/distributions/utils.py", line 33, in broadcast_all
+    return torch.broadcast_tensors(*values)
+  File "/home/ssbl/anaconda3/envs/ml/lib/python3.7/site-packages/torch/functional.py", line 52, in broadcast_tensors
+    return torch._C._VariableFunctions.broadcast_tensors(tensors)
+RuntimeError: The size of tensor a (4) must match the size of tensor b (0) at non-singleton dimension 0

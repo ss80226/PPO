@@ -1,0 +1,94 @@
+diff --git a/__pycache__/network.cpython-37.pyc b/__pycache__/network.cpython-37.pyc
+index 68cf64a..7bc12ca 100644
+Binary files a/__pycache__/network.cpython-37.pyc and b/__pycache__/network.cpython-37.pyc differ
+diff --git a/__pycache__/ppo.cpython-37.pyc b/__pycache__/ppo.cpython-37.pyc
+index 27c57ab..d47e17b 100644
+Binary files a/__pycache__/ppo.cpython-37.pyc and b/__pycache__/ppo.cpython-37.pyc differ
+diff --git a/__pycache__/replay_buffer.cpython-37.pyc b/__pycache__/replay_buffer.cpython-37.pyc
+index 228a4dd..6ba5a91 100644
+Binary files a/__pycache__/replay_buffer.cpython-37.pyc and b/__pycache__/replay_buffer.cpython-37.pyc differ
+diff --git a/network.py b/network.py
+index 1bfa887..32dc69b 100644
+--- a/network.py
++++ b/network.py
+@@ -20,8 +20,11 @@ class Network(nn.Module):
+         x = F.relu(self.fc1(x))
+         x = F.relu(self.fc2(x))
+         x = self.outLayer(x)
+-        mu_vector = x[0][0:self.action_dim].unsqueeze(0)
+-        sigma_vector = x[0][self.action_dim:self.action_dim*2].unsqueeze(0)
++        # print(x.shape)
++        # print(x)
++        mu_vector = x[:, 0:self.action_dim]
++        # print(mu_vector)
++        sigma_vector = x[:, self.action_dim:self.action_dim*2]
+         sigma_vector = torch.abs(sigma_vector)
+         return mu_vector, sigma_vector
+     def act(self, mu_vector, sigma_vector):
+@@ -31,15 +34,18 @@ class Network(nn.Module):
+         output: (1, action_dim) action vector
+         '''
+         action_vector = torch.distributions.normal.Normal(mu_vector, sigma_vector).sample()
+-        action_vector = torch.clamp(action_vector, -1., 1.) # clipping value into the a ~ (action_space.low, action_space.high)
++        action_vector = torch.clamp(action_vector, -100., 100.) # clipping value into the a ~ (action_space.low, action_space.high)
++        print(action_vector)
++        # print()
+         return action_vector
+     def logp(self, state, action):
+         mu_vector, sigma_vector = self.forward(state)
+         dist = torch.distributions.normal.Normal(mu_vector, sigma_vector)
+         logp_vector = dist.log_prob(action)
+-
++        # print(logp_vector)
+         logp_joint = logp_vector.sum(dim=1, keepdim=True)
+-        print(logp_joint)
++        # print(logp_joint)
++        # print(logp_joint)
+         return logp_joint
+ 
+ class ValueNet(nn.Module):
+@@ -48,9 +54,11 @@ class ValueNet(nn.Module):
+         self.state_dim = args['state_dim']
+         self.fc1 = nn.Linear(self.state_dim, 256)
+         self.fc2 = nn.Linear(256, 128)
+-        self.fc3 = nn.Linear(128, 1)
++        self.fc3 = nn.Linear(128, 64)
++        self.fc4 = nn.Linear(64, 1)
+     def forward(self, x):
+         x = F.relu(self.fc1(x))
+         x = F.relu(self.fc2(x))
+-        x = self.fc3(x)
++        x = F.relu(self.fc3(x))
++        x = self.fc4(x)
+         return x
+\ No newline at end of file
+diff --git a/ppo.py b/ppo.py
+index dad530e..b2a4c19 100644
+--- a/ppo.py
++++ b/ppo.py
+@@ -17,6 +17,7 @@ EPISLON = 0.2
+ LEARNING_RATE = 0.0002
+ VF_COEFF = 1
+ ENTROPY_COEFF = 0.01
++ENV_SIZE = 2
+ # WEIGHT_DECAY = 0.99
+ # MOMENTUM = 0.9
+ 
+@@ -35,7 +36,7 @@ class PPO(object):
+         '''
+         update policy by sample from replay buffer 
+         '''
+-        state_array, action_array, reward_array, logp_old_array, true_state_value_array, advantage_array = replay_buffer.sample(BATCH_SIZE)
++        state_array, action_array, reward_array, logp_old_array, true_state_value_array, advantage_array = replay_buffer.sample(BATCH_SIZE*ENV_SIZE)
+         # [state, action, reward, logp, true_state_value, advantage]
+         # state_array = sample_batch[:, 0]
+         # action_array = sample_batch[:, 1]
+@@ -66,7 +67,7 @@ class PPO(object):
+         # print(clip_loss)
+         mu_vector_batch, sigma_vector_batch = self.policy(state_batch)
+         # state_entropy_batch = torch.mean(torch.distributions.normal.Normal(mu_vector_batch, sigma_vector_batch).entropy())
+-        # print(logp_batch.shape)
++        # print(true_state_value_batch)
+         state_entropy_batch = logp_batch
+         entropy_loss = -torch.mean(state_entropy_batch)
+         actor_lo

@@ -1,0 +1,33 @@
+-------------------------
+episode: 0, actor_loss: 1359.8203125, critic_losss: 808.5635375976562
+-------------------------
+episode: 0, actor_loss: 2.9697937965393066, critic_losss: 830.4017944335938
+-------------------------
+episode: 0, actor_loss: 3.505573034286499, critic_losss: 903.3296508789062
+-------------------------
+episode: 10, actor_loss: 2.3300814628601074, critic_losss: 84.4557113647461
+-------------------------
+episode: 10, actor_loss: 2.274806499481201, critic_losss: 87.04290008544922
+-------------------------
+episode: 10, actor_loss: 2.197977066040039, critic_losss: 88.09239196777344
+-------------------------
+episode: 20, actor_loss: 2.870786666870117, critic_losss: 255.74359130859375
+-------------------------
+episode: 20, actor_loss: 2.614262819290161, critic_losss: 274.3949890136719
+-------------------------
+episode: 20, actor_loss: 2.7091763019561768, critic_losss: 309.7336730957031
+[31mERROR: Received the following error from Worker-1: AssertionError: r.LengthSquared() > 0.0f[0m
+[31mERROR: Shutting down Worker-1.[0m
+[31mERROR: Received the following error from Worker-0: AssertionError: r.LengthSquared() > 0.0f[0m
+[31mERROR: Shutting down Worker-0.[0m
+[31mERROR: Raising the last exception back to the main process.[0m
+Traceback (most recent call last):
+  File "train.py", line 45, in <module>
+    next_state, reward, done, _ = env.step(tuple(action_tensor.cpu().numpy()))
+  File "/home/ssbl/anaconda3/envs/ml/lib/python3.7/site-packages/gym/vector/vector_env.py", line 80, in step
+    return self.step_wait()
+  File "/home/ssbl/anaconda3/envs/ml/lib/python3.7/site-packages/gym/vector/async_vector_env.py", line 233, in step_wait
+    self._raise_if_errors(successes)
+  File "/home/ssbl/anaconda3/envs/ml/lib/python3.7/site-packages/gym/vector/async_vector_env.py", line 339, in _raise_if_errors
+    raise exctype(value)
+AssertionError: r.LengthSquared() > 0.0f

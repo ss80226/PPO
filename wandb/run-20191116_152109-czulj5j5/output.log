@@ -1,0 +1,13 @@
+torch.Size([4, 8])
+Traceback (most recent call last):
+  File "train.py", line 40, in <module>
+    action_tensor = policy.act(mu_vector, sigma_vector)
+  File "/home/ssbl/Desktop/PPO/network.py", line 34, in act
+    action_vector = torch.distributions.normal.Normal(mu_vector, sigma_vector).sample()
+  File "/home/ssbl/anaconda3/envs/ml/lib/python3.7/site-packages/torch/distributions/normal.py", line 44, in __init__
+    self.loc, self.scale = broadcast_all(loc, scale)
+  File "/home/ssbl/anaconda3/envs/ml/lib/python3.7/site-packages/torch/distributions/utils.py", line 33, in broadcast_all
+    return torch.broadcast_tensors(*values)
+  File "/home/ssbl/anaconda3/envs/ml/lib/python3.7/site-packages/torch/functional.py", line 52, in broadcast_tensors
+    return torch._C._VariableFunctions.broadcast_tensors(tensors)
+RuntimeError: The size of tensor a (4) must match the size of tensor b (0) at non-singleton dimension 0

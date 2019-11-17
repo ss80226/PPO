@@ -1,0 +1,19 @@
+-------------------------
+episode: 0, actor_loss: 757.5173950195312, critic_losss: 1455.5537109375
+-------------------------
+episode: 0, actor_loss: 6.2303242683410645, critic_losss: 1416.1806640625
+-------------------------
+episode: 0, actor_loss: 5.449601173400879, critic_losss: 1467.5947265625
+[31mERROR: Received the following error from Worker-0: AssertionError: r.LengthSquared() > 0.0f[0m
+[31mERROR: Shutting down Worker-0.[0m
+[31mERROR: Raising the last exception back to the main process.[0m
+Traceback (most recent call last):
+  File "train.py", line 44, in <module>
+    next_state, reward, done, _ = env.step(tuple(action_tensor.cpu().numpy()))
+  File "/home/ssbl/anaconda3/envs/ml/lib/python3.7/site-packages/gym/vector/vector_env.py", line 80, in step
+    return self.step_wait()
+  File "/home/ssbl/anaconda3/envs/ml/lib/python3.7/site-packages/gym/vector/async_vector_env.py", line 233, in step_wait
+    self._raise_if_errors(successes)
+  File "/home/ssbl/anaconda3/envs/ml/lib/python3.7/site-packages/gym/vector/async_vector_env.py", line 339, in _raise_if_errors
+    raise exctype(value)
+AssertionError: r.LengthSquared() > 0.0f

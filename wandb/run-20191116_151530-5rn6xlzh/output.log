@@ -1,0 +1,2 @@
+tensor([[-0.0323,  0.0856, -0.1341, -0.0379]], device='cuda:0',
+       grad_fn=<UnsqueezeBackward0>)

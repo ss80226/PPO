@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "train.py", line 76, in <module>
+    replay_buffer.update_true_state_value()
+  File "/home/ssbl/Desktop/PPO/replay_buffer.py", line 54, in update_true_state_value
+    if self.terminate_buffer[i][update_index] == 0 and update_index != self.size-1:
+IndexError: index -1025 is out of bounds for axis 0 with size 1024

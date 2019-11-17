@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "train.py", line 18, in <module>
+    ppo = PPO(POLICY_ARGS)
+  File "/home/ssbl/Desktop/PPO/ppo.py", line 29, in __init__
+    self.value_net = ValueNet(POLICY_ARGS).to(DEVICE)
+  File "/home/ssbl/Desktop/PPO/network.py", line 44, in __init__
+    super(ValueNet, self).__init()
+AttributeError: 'super' object has no attribute '_ValueNet__init'

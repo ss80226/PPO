@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "train.py", line 64, in <module>
+    replay_buffer.update_true_state_value()
+  File "/home/ssbl/Desktop/PPO/replay_buffer.py", line 50, in update_true_state_value
+    print(true_state_value_buffer[0][update_index])
+NameError: name 'true_state_value_buffer' is not defined

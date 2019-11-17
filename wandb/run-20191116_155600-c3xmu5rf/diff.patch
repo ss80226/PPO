@@ -1,0 +1,489 @@
+diff --git a/__pycache__/network.cpython-37.pyc b/__pycache__/network.cpython-37.pyc
+index 68cf64a..b45490e 100644
+Binary files a/__pycache__/network.cpython-37.pyc and b/__pycache__/network.cpython-37.pyc differ
+diff --git a/__pycache__/ppo.cpython-37.pyc b/__pycache__/ppo.cpython-37.pyc
+index 27c57ab..c43cd7e 100644
+Binary files a/__pycache__/ppo.cpython-37.pyc and b/__pycache__/ppo.cpython-37.pyc differ
+diff --git a/__pycache__/replay_buffer.cpython-37.pyc b/__pycache__/replay_buffer.cpython-37.pyc
+index 228a4dd..aa0dba0 100644
+Binary files a/__pycache__/replay_buffer.cpython-37.pyc and b/__pycache__/replay_buffer.cpython-37.pyc differ
+diff --git a/network.py b/network.py
+index 1bfa887..65402ae 100644
+--- a/network.py
++++ b/network.py
+@@ -20,8 +20,11 @@ class Network(nn.Module):
+         x = F.relu(self.fc1(x))
+         x = F.relu(self.fc2(x))
+         x = self.outLayer(x)
+-        mu_vector = x[0][0:self.action_dim].unsqueeze(0)
+-        sigma_vector = x[0][self.action_dim:self.action_dim*2].unsqueeze(0)
++        # print(x.shape)
++        # print(x)
++        mu_vector = x[:, 0:self.action_dim]
++        # print(mu_vector)
++        sigma_vector = x[:, self.action_dim:self.action_dim*2]
+         sigma_vector = torch.abs(sigma_vector)
+         return mu_vector, sigma_vector
+     def act(self, mu_vector, sigma_vector):
+@@ -32,14 +35,16 @@ class Network(nn.Module):
+         '''
+         action_vector = torch.distributions.normal.Normal(mu_vector, sigma_vector).sample()
+         action_vector = torch.clamp(action_vector, -1., 1.) # clipping value into the a ~ (action_space.low, action_space.high)
++        # print()
+         return action_vector
+     def logp(self, state, action):
+         mu_vector, sigma_vector = self.forward(state)
+         dist = torch.distributions.normal.Normal(mu_vector, sigma_vector)
+         logp_vector = dist.log_prob(action)
+-
++        # print(logp_vector)
+         logp_joint = logp_vector.sum(dim=1, keepdim=True)
+-        print(logp_joint)
++        # print(logp_joint)
++        # print(logp_joint)
+         return logp_joint
+ 
+ class ValueNet(nn.Module):
+@@ -48,9 +53,11 @@ class ValueNet(nn.Module):
+         self.state_dim = args['state_dim']
+         self.fc1 = nn.Linear(self.state_dim, 256)
+         self.fc2 = nn.Linear(256, 128)
+-        self.fc3 = nn.Linear(128, 1)
++        self.fc3 = nn.Linear(128, 64)
++        self.fc4 = nn.Linear(64, 1)
+     def forward(self, x):
+         x = F.relu(self.fc1(x))
+         x = F.relu(self.fc2(x))
+-        x = self.fc3(x)
++        x = F.relu(self.fc3(x))
++        x = self.fc4(x)
+         return x
+\ No newline at end of file
+diff --git a/ppo.py b/ppo.py
+index dad530e..28ebaaa 100644
+--- a/ppo.py
++++ b/ppo.py
+@@ -17,6 +17,7 @@ EPISLON = 0.2
+ LEARNING_RATE = 0.0002
+ VF_COEFF = 1
+ ENTROPY_COEFF = 0.01
++ENV_SIZE = 4
+ # WEIGHT_DECAY = 0.99
+ # MOMENTUM = 0.9
+ 
+@@ -35,7 +36,7 @@ class PPO(object):
+         '''
+         update policy by sample from replay buffer 
+         '''
+-        state_array, action_array, reward_array, logp_old_array, true_state_value_array, advantage_array = replay_buffer.sample(BATCH_SIZE)
++        state_array, action_array, reward_array, logp_old_array, true_state_value_array, advantage_array = replay_buffer.sample(BATCH_SIZE*ENV_SIZE)
+         # [state, action, reward, logp, true_state_value, advantage]
+         # state_array = sample_batch[:, 0]
+         # action_array = sample_batch[:, 1]
+@@ -66,7 +67,7 @@ class PPO(object):
+         # print(clip_loss)
+         mu_vector_batch, sigma_vector_batch = self.policy(state_batch)
+         # state_entropy_batch = torch.mean(torch.distributions.normal.Normal(mu_vector_batch, sigma_vector_batch).entropy())
+-        # print(logp_batch.shape)
++        # print(true_state_value_batch)
+         state_entropy_batch = logp_batch
+         entropy_loss = -torch.mean(state_entropy_batch)
+         actor_loss = clip_loss + ENTROPY_COEFF*entropy_loss
+@@ -80,6 +81,8 @@ class PPO(object):
+ 
+         self.value_net_optimizer.zero_grad()
+         critic_loss.backward()
++        for param in self.value_net.parameters():
++                param.grad.data.clamp_(-1, 1)
+         self.value_net_optimizer.step()
+         return actor_loss, critic_loss
+         
+diff --git a/ppo_checkpoint_policy b/ppo_checkpoint_policy
+index 2789956..6bfaebe 100644
+Binary files a/ppo_checkpoint_policy and b/ppo_checkpoint_policy differ
+diff --git a/ppo_checkpoint_valueNet b/ppo_checkpoint_valueNet
+index 4448e7e..b141edb 100644
+Binary files a/ppo_checkpoint_valueNet and b/ppo_checkpoint_valueNet differ
+diff --git a/replay_buffer.py b/replay_buffer.py
+index 2b24669..dbdbfb8 100644
+--- a/replay_buffer.py
++++ b/replay_buffer.py
+@@ -3,84 +3,97 @@ import random
+ DISCOUNT_FACTOR = 0.99
+ GAE_PARAMETER = 0.95
+ BATCH_SIZE = 256
++ENV_SIZE = 4
+ class ReplayBuffer(object):
+     def __init__(self, size):
+         self.size = size
+         self.batch_size = BATCH_SIZE
++        self.env_size = ENV_SIZE
+         self.current_index = 0
+-        self.state_buffer = np.zeros(shape=(1, self.size, 24))
+-        self.action_buffer = np.zeros(shape=(1, self.size, 4))
+-        self.reward_buffer = np.zeros(shape=(1, self.size))
+-        self.state_value_buffer = np.zeros(shape=(1, self.size))
+-        self.true_state_value_buffer = np.zeros(shape=(1, self.size))
+-        self.advantage_buffer = np.zeros(shape=(1, self.size))
+-        self.logp_buffer = np.zeros(shape=(1, self.size)) # for important sampling
+-        self.terminate_buffer = np.zeros(shape=(1, self.size))
++        self.state_buffer = np.zeros(shape=(self.env_size, self.size, 24))
++        self.action_buffer = np.zeros(shape=(self.env_size, self.size, 4))
++        self.reward_buffer = np.zeros(shape=(self.env_size, self.size))
++        self.state_value_buffer = np.zeros(shape=(self.env_size, self.size))
++        self.true_state_value_buffer = np.zeros(shape=(self.env_size, self.size))
++        self.advantage_buffer = np.zeros(shape=(self.env_size, self.size))
++        self.logp_buffer = np.zeros(shape=(self.env_size, self.size)) # for important sampling
++        self.terminate_buffer = np.zeros(shape=(self.env_size, self.size))
+         self.index_array = [x for x in range(self.size)]
+ 
+-        self.state_sample_batch = np.zeros(shape=(self.batch_size, 24))
+-        self.action_sample_batch = np.zeros(shape=(self.batch_size, 4))
+-        self.reward_sample_batch = np.zeros(shape=(self.batch_size))
+-        self.logp_sample_batch = np.zeros(shape=(self.batch_size))
+-        self.true_state_value_sample_batch = np.zeros(shape=(self.batch_size))
+-        self.advantage_sample_batch = np.zeros(shape=(self.batch_size))
++        self.state_sample_batch = np.zeros(shape=(self.batch_size*self.env_size, 24))
++        self.action_sample_batch = np.zeros(shape=(self.batch_size*self.env_size, 4))
++        self.reward_sample_batch = np.zeros(shape=(self.batch_size*self.env_size))
++        self.logp_sample_batch = np.zeros(shape=(self.batch_size*self.env_size))
++        self.true_state_value_sample_batch = np.zeros(shape=(self.batch_size*self.env_size))
++        self.advantage_sample_batch = np.zeros(shape=(self.batch_size*self.env_size))
+ 
+     def store(self, state, action, logp, reward, state_value, isTerminate):
+-        self.state_buffer[0][self.current_index] = state
+-        self.action_buffer[0][self.current_index] = action
+-        self.logp_buffer[0][self.current_index] = logp
+-        self.reward_buffer[0][self.current_index] = reward
+-        self.state_value_buffer[0][self.current_index] = state_value
+-        self.terminate_buffer[0][self.current_index] = isTerminate
++        for i in range(self.env_size):
++            self.state_buffer[i][self.current_index] = state[i]
++            self.action_buffer[i][self.current_index] = action[i]
++            self.logp_buffer[i][self.current_index] = logp[i]
++            self.reward_buffer[i][self.current_index] = reward[i]
++            self.state_value_buffer[i][self.current_index] = state_value[i]
++            self.terminate_buffer[i][self.current_index] = 1 if isTerminate[i] else 0
+ 
+         self.current_index = (self.current_index + 1)%self.size
+     def update_true_state_value(self):
++        # print(self.current_index)
+         discount_factor = DISCOUNT_FACTOR
+         # print(self.current_index)
+         # discount_time = 0
+         # value = 0
+-        update_index = self.size-1
++        # self.true_state_value_buffer = np.zeros(shape=(1, self.size))
++        
+         # print(update_index)
+         # update_index_next = (update_index + 1) % self.size
+-        for i in range(self.size):
+-            # print(update_index)
+-            # exit()
+-            if self.terminate_buffer[0][update_index] == 0 and update_index != self.size-1: 
+-                self.true_state_value_buffer[0][update_index] = self.reward_buffer[0][update_index] + discount_factor * (self.true_state_value_buffer[0][update_index_next])
+-            else:
+-                self.true_state_value_buffer[0][update_index] = self.reward_buffer[0][update_index]
+-            update_index -= 1
+-            update_index_next = update_index + 1
++        for i in range(self.env_size):
++            update_index = self.size-1
++            for j in range(self.size):
++                # print(update_index)
++                # exit()
++                if self.terminate_buffer[i][update_index] == 0 and update_index != self.size-1: 
++                    self.true_state_value_buffer[i][update_index] = self.reward_buffer[i][update_index] + discount_factor * (self.true_state_value_buffer[i][update_index_next])
++                else:
++                    self.true_state_value_buffer[i][update_index] = self.reward_buffer[i][update_index]
++                    # print('qq')
++                # print(self.true_state_value_buffer[0][update_index])
++                update_index -= 1
++                update_index_next = update_index + 1
++        # print(self.true_state_value_buffer)
+     def update_advantage(self):
+         discount_factor = DISCOUNT_FACTOR
+-        update_index = self.size-1
++        
+         # update_index_next = (update_index + 1) % self.size
+-        for i in range(self.size):
+-            if self.terminate_buffer[0][update_index] == 0 and update_index != self.size-1: 
+-                # delta_t = r(t) + GAE_PARAMETER*DISCOUNT*V()
+-                delta = self.reward_buffer[0][update_index] + discount_factor * (self.state_value_buffer[0][update_index_next]) - self.state_value_buffer[0][update_index]
+-                self.advantage_buffer[0][update_index] = delta + GAE_PARAMETER * discount_factor * (self.advantage_buffer[0][update_index_next])
+-            else:
+-                # this is an end state
+-                # print('hell yeah')
+-                # exit()
+-                delta = self.reward_buffer[0][update_index] - self.state_value_buffer[0][update_index]
+-                self.advantage_buffer[0][update_index] = delta
+-            update_index -= 1
+-            update_index_next = update_index + 1
++        for i in range(self.env_size):
++            update_index = self.size-1
++            for j in range(self.size):
++                if self.terminate_buffer[i][update_index] == 0 and update_index != self.size-1: 
++                    # delta_t = r(t) + GAE_PARAMETER*DISCOUNT*V()
++                    delta = self.reward_buffer[i][update_index] + discount_factor * (self.state_value_buffer[i][update_index_next]) - self.state_value_buffer[i][update_index]
++                    self.advantage_buffer[i][update_index] = delta + GAE_PARAMETER * discount_factor * (self.advantage_buffer[i][update_index_next])
++                else:
++                    # this is an end state
++                    # print('hell yeah')
++                    # exit()
++                    delta = self.reward_buffer[i][update_index] - self.state_value_buffer[i][update_index]
++                    self.advantage_buffer[i][update_index] = delta
++                update_index -= 1
++                update_index_next = update_index + 1
+     
+-    def sample(self, batch_size):
++    def sample(self, batch_sizeXenv_size):
+         # [state, action, reward, logp, true_state_value, advantage]
+-        sample_index = random.sample(self.index_array, batch_size)
++        sample_index = random.sample(self.index_array, self.batch_size)
+         # sample_batch = np.zeros(shape=(batch_size, 6))
+-        sample_batch = [None for i in range(batch_size)]
+-        for i, element in enumerate(sample_index):
+-            # sample_batch[i] = [self.state_buffer[0][element], self.action_buffer[0][element], self.reward_buffer[0][element], self.logp_buffer[0][element], self.true_state_value_buffer[0][element], self.advantage_buffer[0][element]]
+-            self.state_sample_batch[i] = self.state_buffer[0][element]
+-            self.action_sample_batch[i] = self.action_buffer[0][element]
+-            self.reward_sample_batch[i] = self.reward_buffer[0][element]
+-            self.logp_sample_batch[i] = self.logp_buffer[0][element]
+-            self.true_state_value_sample_batch[i] = self.true_state_value_buffer[0][element]
+-            self.advantage_sample_batch[i] = self.advantage_buffer[0][element]
++        sample_batch = [None for i in range(self.batch_size)]
++        for j in range(self.env_size):
++            for i, element in enumerate(sample_index):
++                # sample_batch[i] = [self.state_buffer[0][element], self.action_buffer[0][element], self.reward_buffer[0][element], self.logp_buffer[0][element], self.true_state_value_buffer[0][element], self.advantage_buffer[0][element]]
++                self.state_sample_batch[i+j*self.batch_size] = self.state_buffer[j][element]
++                self.action_sample_batch[i+j*self.batch_size] = self.action_buffer[j][element]
++                self.reward_sample_batch[i+j*self.batch_size] = self.reward_buffer[j][element]
++                self.logp_sample_batch[i+j*self.batch_size] = self.logp_buffer[j][element]
++                self.true_state_value_sample_batch[i+j*self.batch_size] = self.true_state_value_buffer[j][element]
++                self.advantage_sample_batch[i+j*self.batch_size] = self.advantage_buffer[j][element]
+         # print(self.state_sample_batch.dtype)
+         return self.state_sample_batch, self.action_sample_batch, self.reward_sample_batch, self.logp_sample_batch, self.true_state_value_sample_batch, self.advantage_sample_batch
+\ No newline at end of file
+diff --git a/test.py b/test.py
+index 709f71b..5db3026 100644
+--- a/test.py
++++ b/test.py
+@@ -1,16 +1,19 @@
+ import gym
+-env = gym.make('BipedalWalker-v2')
++env = gym.vector.make('BipedalWalker-v2', 3)
+ # env = gym.make('CartPole-v0')
+ # env = gym.make('SpaceInvaders-ram-v0')
+ env.reset()
+ 
+ for _ in range(200000):
+-    env.render()
++    # env.render()
+     action = env.action_space.sample()
+     state, reward, done, info = env.step(action)
+-    print(state.shape)
+-    if done:
+-        print('done')
+-        break
++    print(action)
++    print(type(action))
++    exit()
++    # print(state.shape)
++    if done[0] == True or done[1] == True or done[2] == True:
++        print(done)
++        # break
+     # print(reward)
+ env.close()
+\ No newline at end of file
+diff --git a/train.py b/train.py
+index 14e01ab..648ac90 100644
+--- a/train.py
++++ b/train.py
+@@ -8,13 +8,14 @@ INPUT_DIM = 24
+ ACTION_DIM = 4
+ BUFFER_SIZE = 1024
+ EPOCHS = 3
++ENV_SIZE = 4
+ POLICY_ARGS = {'state_dim': INPUT_DIM, 'action_dim': ACTION_DIM}
+ GPU = torch.cuda.is_available()
+ DEVICE = 'cuda' if GPU else 'cpu'
+ PATH = './ppo_checkpoint'
+-EPISODE = 1000
++EPISODE = 100000
+ wandb.init(project="ppo-atari")
+-env = gym.make('BipedalWalker-v2').unwrapped
++env = gym.vector.make('BipedalWalker-v2', ENV_SIZE).unwrapped
+ ppo = PPO(POLICY_ARGS)
+ replay_buffer = ReplayBuffer(BUFFER_SIZE)
+ policy = ppo.policy
+@@ -28,37 +29,50 @@ for current_episode in range(EPISODE):
+     tra_reward = 0
+     # sample buffer_size steps
+     state = env.reset()
+-    step = 0
++    # step = 0
+     while True:
+         if total_game_step >= BUFFER_SIZE:
+             # print('gg')
+             break
+-        state_tensor = torch.tensor([state]).float().to(DEVICE)
++        state_tensor = torch.tensor(state).float().to(DEVICE)
+         mu_vector, sigma_vector = policy(state_tensor)
++        # print(mu_vector)
+         action_tensor = policy.act(mu_vector, sigma_vector)
+         # print(action_tensor.squeeze(0))
+-        next_state, reward, done, _ = env.step(action_tensor.cpu().squeeze(0).numpy())
+-        reward_tensor = torch.tensor([reward]).float().to(DEVICE)
+-        state_value = value_net(state_tensor)
+-        isTerminate = 1 if done else 0
+-        logp_tensor = policy.logp(state_tensor, action_tensor)
++        # print(mu_vector)
++        # exit()
++        next_state, reward, done, _ = env.step(tuple(action_tensor.cpu().numpy()))
++        # reward_tensor = torch.tensor([reward]).float().to(DEVICE)
++        # state_value = value_net(state_tensor)
++        
++        logp_tensor = policy.logp(state_tensor, action_tensor).detach()
++        # print(logp_tensor)
++        # exit()
+         # print(logp_tensor)
+-        state_value_tensor = value_net(state_tensor)
+-        replay_buffer.store(state=state_tensor.cpu().squeeze(0).numpy(), action=action_tensor.cpu().squeeze(0).numpy(), logp=logp_tensor.item(), reward=reward, state_value=state_value_tensor.item(), isTerminate=isTerminate)
+-        tra_reward += reward
+-        step += 1
+-        if done:
+-            state = env.reset()
+-            wandb.log({'reward': tra_reward})
+-            # print(step)
+-            step = 0
+-            # print(tra_reward)
+-            tra_reward = 0
+-        else:
+-            state = next_state
++        state_value_tensor = value_net(state_tensor).detach()
++        # print(reward)
++        # print(reward)
++        # print(done)
++        # exit()
++        # print(state_value_tensor)
++        # exit()
++        replay_buffer.store(state=state_tensor.cpu().numpy(), action=action_tensor.cpu().numpy(), logp=logp_tensor.cpu().numpy(), reward=reward, state_value=state_value_tensor.cpu().numpy(), isTerminate=done)
++        # tra_reward += reward
++        # step += 1
++        # if done:
++        #     # print('qqq')
++        #     state = env.reset()
++        #     # wandb.log({'reward': tra_reward})
++        #     # print(step)
++        #     step = 0
++        #     # print(tra_reward)
++        #     tra_reward = 0
++        # else:
++        state = next_state
+         total_game_step += 1
+         # print(total_game_step)
+         # exit()
++    # sample finished
+     replay_buffer.update_true_state_value()
+     replay_buffer.update_advantage()
+     for epoch in range(EPOCHS):
+diff --git a/wandb/debug.log b/wandb/debug.log
+index af1c749..8983ae9 100644
+--- a/wandb/debug.log
++++ b/wandb/debug.log
+@@ -1,79 +1,18 @@
+-2019-11-16 17:24:13,341 DEBUG   MainThread:6511 [wandb_config.py:_load_defaults():110] no defaults not found in config-defaults.yaml
+-2019-11-16 17:24:13,345 DEBUG   MainThread:6511 [cmd.py:execute():724] Popen(['git', 'cat-file', '--batch-check'], cwd=/home/ssbl/Desktop/PPO, universal_newlines=False, shell=None, istream=<valid stream>)
+-2019-11-16 17:24:13,349 DEBUG   MainThread:6511 [cmd.py:execute():724] Popen(['git', 'rev-parse', '--show-toplevel'], cwd=/home/ssbl/Desktop/PPO, universal_newlines=False, shell=None, istream=None)
+-2019-11-16 17:24:13,351 DEBUG   MainThread:6511 [cmd.py:execute():724] Popen(['git', 'status', '--porcelain', '--untracked-files'], cwd=/home/ssbl/Desktop/PPO, universal_newlines=False, shell=None, istream=None)
+-2019-11-16 17:24:13,360 DEBUG   MainThread:6511 [run_manager.py:__init__():535] Initialized sync for ppo-atari/ut0f7qfm
+-2019-11-16 17:24:13,362 INFO    MainThread:6511 [run_manager.py:wrap_existing_process():1131] wrapping existing process 6504
+-2019-11-16 17:24:13,362 WARNING MainThread:6511 [io_wrap.py:register():104] SIGWINCH handler was not None: <Handlers.SIG_DFL: 0>
+-2019-11-16 17:24:13,364 DEBUG   MainThread:6511 [connectionpool.py:_new_conn():959] Starting new HTTPS connection (1): pypi.org:443
+-2019-11-16 17:24:13,514 DEBUG   MainThread:6511 [connectionpool.py:_make_request():437] https://pypi.org:443 "GET /pypi/wandb/json HTTP/1.1" 200 37669
+-2019-11-16 17:24:13,556 INFO    MainThread:6511 [run_manager.py:init_run():916] system metrics and metadata threads started
+-2019-11-16 17:24:13,557 INFO    MainThread:6511 [run_manager.py:init_run():950] upserting run before process can begin, waiting at most 10 seconds
+-2019-11-16 17:24:13,566 DEBUG   Thread-14 :6511 [connectionpool.py:_new_conn():959] Starting new HTTPS connection (1): api.wandb.ai:443
+-2019-11-16 17:24:13,801 DEBUG   Thread-14 :6511 [connectionpool.py:_make_request():437] https://api.wandb.ai:443 "POST /graphql HTTP/1.1" 200 507
+-2019-11-16 17:24:13,806 INFO    Thread-14 :6511 [run_manager.py:_upsert_run():1035] saving patches
+-2019-11-16 17:24:13,807 DEBUG   Thread-14 :6511 [cmd.py:execute():724] Popen(['git', 'rev-parse', '--show-toplevel'], cwd=/home/ssbl/Desktop/PPO, universal_newlines=False, shell=None, istream=None)
+-2019-11-16 17:24:13,812 DEBUG   Thread-14 :6511 [cmd.py:execute():724] Popen(['git', 'diff', '--cached', '--abbrev=40', '--full-index', '--raw'], cwd=/home/ssbl/Desktop/PPO, universal_newlines=False, shell=None, istream=None)
+-2019-11-16 17:24:13,819 DEBUG   Thread-14 :6511 [cmd.py:execute():724] Popen(['git', 'diff', '--abbrev=40', '--full-index', '--raw'], cwd=/home/ssbl/Desktop/PPO, universal_newlines=False, shell=None, istream=None)
+-2019-11-16 17:24:13,826 DEBUG   Thread-14 :6511 [cmd.py:execute():724] Popen(['git', 'merge-base', 'HEAD', 'd302c5706cbed74f407437dedf108cbf8ca58f73'], cwd=/home/ssbl/Desktop/PPO, universal_newlines=False, shell=None, istream=None)
+-2019-11-16 17:24:13,832 INFO    Thread-14 :6511 [run_manager.py:_upsert_run():1039] saving pip packages
+-2019-11-16 17:24:13,833 INFO    Thread-14 :6511 [run_manager.py:_upsert_run():1041] initializing streaming files api
+-2019-11-16 17:24:13,834 INFO    Thread-14 :6511 [run_manager.py:_upsert_run():1048] unblocking file change observer, beginning sync with W&B servers
+-2019-11-16 17:24:13,834 INFO    MainThread:6511 [run_manager.py:wrap_existing_process():1148] informing user process we are ready to proceed
+-2019-11-16 17:24:13,841 INFO    MainThread:6511 [run_manager.py:_sync_etc():1255] entering loop for messages from user process
+-2019-11-16 17:24:13,841 DEBUG   Thread-15 :6511 [connectionpool.py:_new_conn():959] Starting new HTTPS connection (1): api.wandb.ai:443
+-2019-11-16 17:24:14,046 DEBUG   Thread-15 :6511 [connectionpool.py:_make_request():437] https://api.wandb.ai:443 "POST /graphql HTTP/1.1" 200 46
+-2019-11-16 17:24:14,344 INFO    Thread-3  :6511 [run_manager.py:_on_file_modified():682] file/dir modified: /home/ssbl/Desktop/PPO/wandb/run-20191116_092413-ut0f7qfm/config.yaml
+-2019-11-16 17:24:14,348 DEBUG   Thread-3  :6511 [connectionpool.py:_new_conn():959] Starting new HTTPS connection (1): api.wandb.ai:443
+-2019-11-16 17:24:14,579 DEBUG   Thread-3  :6511 [connectionpool.py:_make_request():437] https://api.wandb.ai:443 "POST /graphql HTTP/1.1" 200 555
+-2019-11-16 17:24:14,581 INFO    Thread-3  :6511 [run_manager.py:_on_file_created():671] file/dir created: /home/ssbl/Desktop/PPO/wandb/run-20191116_092413-ut0f7qfm/requirements.txt
+-2019-11-16 17:24:14,581 INFO    Thread-3  :6511 [run_manager.py:_on_file_created():671] file/dir created: /home/ssbl/Desktop/PPO/wandb/run-20191116_092413-ut0f7qfm/output.log
+-2019-11-16 17:24:14,582 INFO    Thread-3  :6511 [run_manager.py:_on_file_created():671] file/dir created: /home/ssbl/Desktop/PPO/wandb/run-20191116_092413-ut0f7qfm/wandb-metadata.json
+-2019-11-16 17:24:16,021 DEBUG   Thread-7  :6511 [connectionpool.py:_new_conn():959] Starting new HTTPS connection (1): api.wandb.ai:443
+-2019-11-16 17:24:16,248 DEBUG   Thread-7  :6511 [connectionpool.py:_make_request():437] https://api.wandb.ai:443 "POST /files/ss80226/ppo-atari/ut0f7qfm/file_stream HTTP/1.1" 200 311
+-2019-11-16 17:24:16,345 DEBUG   Thread-16 :6511 [connectionpool.py:_new_conn():959] Starting new HTTPS connection (1): api.wandb.ai:443
+-2019-11-16 17:24:16,346 INFO    Thread-3  :6511 [run_manager.py:_on_file_modified():682] file/dir modified: /home/ssbl/Desktop/PPO/wandb/run-20191116_092413-ut0f7qfm/wandb-history.jsonl
+-2019-11-16 17:24:16,346 INFO    Thread-3  :6511 [run_manager.py:_on_file_modified():682] file/dir modified: /home/ssbl/Desktop/PPO/wandb/run-20191116_092413-ut0f7qfm/output.log
+-2019-11-16 17:24:16,346 INFO    Thread-3  :6511 [run_manager.py:_on_file_created():671] file/dir created: /home/ssbl/Desktop/PPO/wandb/run-20191116_092413-ut0f7qfm/wandb-summary.json
+-2019-11-16 17:24:16,446 DEBUG   Thread-18 :6511 [connectionpool.py:_new_conn():959] Starting new HTTPS connection (1): api.wandb.ai:443
+-2019-11-16 17:24:16,546 DEBUG   Thread-19 :6511 [connectionpool.py:_new_conn():959] Starting new HTTPS connection (1): api.wandb.ai:443
+-2019-11-16 17:24:16,553 DEBUG   Thread-16 :6511 [connectionpool.py:_make_request():437] https://api.wandb.ai:443 "POST /graphql HTTP/1.1" 200 737
+-2019-11-16 17:24:16,557 DEBUG   Thread-16 :6511 [connectionpool.py:_new_conn():959] Starting new HTTPS connection (1): storage.googleapis.com:443
+-2019-11-16 17:24:16,649 DEBUG   Thread-18 :6511 [connectionpool.py:_make_request():437] https://api.wandb.ai:443 "POST /graphql HTTP/1.1" 200 755
+-2019-11-16 17:24:16,651 DEBUG   Thread-18 :6511 [connectionpool.py:_new_conn():959] Starting new HTTPS connection (1): storage.googleapis.com:443
+-2019-11-16 17:24:16,755 DEBUG   Thread-19 :6511 [connectionpool.py:_make_request():437] https://api.wandb.ai:443 "POST /graphql HTTP/1.1" 200 769
+-2019-11-16 17:24:16,758 DEBUG   Thread-19 :6511 [connectionpool.py:_new_conn():959] Starting new HTTPS connection (1): storage.googleapis.com:443
+-2019-11-16 17:24:16,884 INFO    MainThread:6511 [run_manager.py:_sync_etc():1311] process received interrupt signal, shutting down
+-2019-11-16 17:24:16,884 INFO    MainThread:6511 [run_manager.py:_sync_etc():1364] closing log streams and sending exitcode to W&B
+-2019-11-16 17:24:16,884 INFO    MainThread:6511 [run_manager.py:shutdown():1055] shutting down system stats and metadata service
+-2019-11-16 17:24:16,966 DEBUG   Thread-16 :6511 [connectionpool.py:_make_request():437] https://storage.googleapis.com:443 "PUT /wandb-production.appspot.com/ss80226/ppo-atari/ut0f7qfm/config.yaml?Expires=1573896316&GoogleAccessId=gorilla-cloud-storage%40wandb-production.iam.gserviceaccount.com&Signature=XgrfAuXJCJW6NLZiLbSVtq3YNhVmBRREN2MJRsiFuSmYTczqnMIdwT2ASEn1GZ3agw%2BsJA7vEQ5JTaSi9DH7%2FnvInChF258cW4aFB2R4SV4MorTx3sKKkyG1MT4eKZjLkASSiilEnSKYWvb54NhUNb5JTKeRhDjFl37Q6iXuNs5xxLP8bbojmPKXUTUwNHlxfEsKkfUZUg%2FRslTIYsOfTQmA4U60Su345L83zojADl9vxsuLk3WqZeqWOqxNkRH6w80Se9CKtbJbQYNsPfVs%2FvMXXDoqCYIk2VFCg%2FnVvJnK47TSBkeaVDBzdf9vXFONR21ZTbdVeOpid02olBQmKQ%3D%3D HTTP/1.1" 200 0
+-2019-11-16 17:24:16,994 DEBUG   Thread-18 :6511 [connectionpool.py:_make_request():437] https://storage.googleapis.com:443 "PUT /wandb-production.appspot.com/ss80226/ppo-atari/ut0f7qfm/requirements.txt?Expires=1573896316&GoogleAccessId=gorilla-cloud-storage%40wandb-production.iam.gserviceaccount.com&Signature=LLycnlo3YVYOWfTUgFAHsW0Hh0hDvGgh%2B0BSLgXIqAuQqu2k0YQ0C1HBC4wiS5tUFKK7whnESJ2KYj8%2BftYZEGP87fnijjyx745E0enrsj1mHsH2KnwasvhbmqYf88TK05Py6VlplGyxEIxwCmw%2Fx56jzJGS2tKAxcWsnhtP8WjtR6F41YfPKn4JyZ3yvzNTXgrakpgxvVR05uX66H6IiUbk8ouZfQm4vsyBiSy%2BRIzb1AAFldG80qO7IWuE7HdQVXgirz3D%2FGYu%2F9%2B6fmXUs8vC9eGBwgMTGc%2FIevwiOsnt85Kk2akN1zJP29PzoERtsuZihRzd%2BsECDMAlMo5bhA%3D%3D HTTP/1.1" 200 0
+-2019-11-16 17:24:17,085 DEBUG   Thread-19 :6511 [connectionpool.py:_make_request():437] https://storage.googleapis.com:443 "PUT /wandb-production.appspot.com/ss80226/ppo-atari/ut0f7qfm/wandb-metadata.json?Expires=1573896316&GoogleAccessId=gorilla-cloud-storage%40wandb-production.iam.gserviceaccount.com&Signature=O6tNgdorBY3fn8oXfqv2ORbMBLU%2BgCSSf8%2FrGlFNJ35EFMbw5SYph8VYSsPv6371rnIT8y4%2FurHzXTRfWo4Xy4YC6WX3mOR3ESS%2BTp2n8%2FTuZT8%2BmEgdL7n2qyCMfoPqq9PEog2dDOKfhFjKuJ69aX%2FF6WsTEctIKaXLJKBvwrQAAvQfj6Ar9XKD%2BQ1nppvj7oBvLbf7I5aVWdRp8UbGgiX7F55z2mbFsz%2FG7exfUMu3tDhTsSKQhAyhoBKXOzH24lvPuYz%2BJsfGp9vDYV6%2Ba8lOxy5Z%2FgIeh7gj2cXgICFGvtmoByd2JqGLVDR0z9dvjXxShVCp1xuG%2BYzbTL4rfw%3D%3D HTTP/1.1" 200 0
+-2019-11-16 17:24:17,346 INFO    Thread-3  :6511 [run_manager.py:_on_file_modified():682] file/dir modified: /home/ssbl/Desktop/PPO/wandb/run-20191116_092413-ut0f7qfm/wandb-summary.json
+-2019-11-16 17:24:17,347 INFO    Thread-3  :6511 [run_manager.py:_on_file_modified():682] file/dir modified: /home/ssbl/Desktop/PPO/wandb/run-20191116_092413-ut0f7qfm/wandb-history.jsonl
+-2019-11-16 17:24:17,348 INFO    Thread-3  :6511 [run_manager.py:_on_file_modified():682] file/dir modified: /home/ssbl/Desktop/PPO/wandb/run-20191116_092413-ut0f7qfm/output.log
+-2019-11-16 17:24:17,348 INFO    Thread-3  :6511 [run_manager.py:_on_file_created():671] file/dir created: /home/ssbl/Desktop/PPO/wandb/run-20191116_092413-ut0f7qfm/wandb-events.jsonl
+-2019-11-16 17:24:17,561 INFO    MainThread:6511 [run_manager.py:shutdown():1067] stopping streaming files and file change observer
+-2019-11-16 17:24:18,347 INFO    Thread-3  :6511 [run_manager.py:_on_file_modified():682] file/dir modified: /home/ssbl/Desktop/PPO/wandb/run-20191116_092413-ut0f7qfm/wandb-metadata.json
+-2019-11-16 17:24:18,361 DEBUG   MainThread:6511 [connectionpool.py:_new_conn():959] Starting new HTTPS connection (1): api.wandb.ai:443
+-2019-11-16 17:24:18,597 DEBUG   MainThread:6511 [connectionpool.py:_make_request():437] https://api.wandb.ai:443 "POST /graphql HTTP/1.1" 200 555
+-2019-11-16 17:24:19,349 DEBUG   Thread-21 :6511 [connectionpool.py:_new_conn():959] Starting new HTTPS connection (1): api.wandb.ai:443
+-2019-11-16 17:24:19,454 DEBUG   Thread-22 :6511 [connectionpool.py:_new_conn():959] Starting new HTTPS connection (1): api.wandb.ai:443
+-2019-11-16 17:24:19,553 DEBUG   Thread-23 :6511 [connectionpool.py:_new_conn():959] Starting new HTTPS connection (1): api.wandb.ai:443
+-2019-11-16 17:24:19,581 DEBUG   Thread-21 :6511 [connectionpool.py:_make_request():437] https://api.wandb.ai:443 "POST /graphql HTTP/1.1" 200 760
+-2019-11-16 17:24:19,588 DEBUG   Thread-21 :6511 [connectionpool.py:_new_conn():959] Starting new HTTPS connection (1): storage.googleapis.com:443
+-2019-11-16 17:24:19,683 DEBUG   Thread-22 :6511 [connectionpool.py:_make_request():437] https://api.wandb.ai:443 "POST /graphql HTTP/1.1" 200 751
+-2019-11-16 17:24:19,695 DEBUG   Thread-22 :6511 [connectionpool.py:_new_conn():959] Starting new HTTPS connection (1): storage.googleapis.com:443
+-2019-11-16 17:24:19,756 DEBUG   Thread-7  :6511 [connectionpool.py:_make_request():437] https://api.wandb.ai:443 "POST /files/ss80226/ppo-atari/ut0f7qfm/file_stream HTTP/1.1" 200 311
+-2019-11-16 17:24:19,769 DEBUG   Thread-23 :6511 [connectionpool.py:_make_request():437] https://api.wandb.ai:443 "POST /graphql HTTP/1.1" 200 778
+-2019-11-16 17:24:19,781 DEBUG   Thread-23 :6511 [connectionpool.py:_new_conn():959] Starting new HTTPS connection (1): storage.googleapis.com:443
+-2019-11-16 17:24:19,959 DEBUG   Thread-21 :6511 [connectionpool.py:_make_request():437] https://storage.googleapis.com:443 "PUT /wandb-production.appspot.com/ss80226/ppo-atari/ut0f7qfm/config.yaml?Expires=1573896319&GoogleAccessId=gorilla-cloud-storage%40wandb-production.iam.gserviceaccount.com&Signature=gzpyPpgeMVEA8rxJeoq6xtID%2BzF%2BQIE50XBW4rdeQs3rFJhbJ4wUE5RMRmH9n8u55zs1BY4FKmSDt1k4k1NoMmCVnyJsqIgvHpwXqWkIKGpM4zcjl9Sv6vE7C3K7ecPiG%2BbFIUaaOX8CQndyBvEfjLRGmtXmhX95%2Bdjo5CNC8NWu8oDodTdl26OLHhkP3tyaWjRqOMpe2XmYv9ovKvb1OPF0jZh81BHqUJSXlN9qu0YNsZnYxdyUw4GLB50ItDFnIL8LVqNfTW1LiykaiomEtEO%2BH%2FEyYyWa%2F5UiJSI5H8d8vFDVl0IQOIyyN650T9ggSi9IqxcwK%2FdtZhcNQbp8rA%3D%3D HTTP/1.1" 200 0
+-2019-11-16 17:24:20,172 DEBUG   Thread-23 :6511 [connectionpool.py:_make_request():437] https://storage.googleapis.com:443 "PUT /wandb-production.appspot.com/ss80226/ppo-atari/ut0f7qfm/wandb-metadata.json?Expires=1573896319&GoogleAccessId=gorilla-cloud-storage%40wandb-production.iam.gserviceaccount.com&Signature=PPPq9uoda%2FKS5hPd6reoXqib5Pw%2BbV2zP%2FzIuaBdGDDqJHMxCaTMj%2FR0F2j71fVSZOcVulGSjsr0yZupvwA29JezJNkLjIQA%2BKTBjWXUYEVAIBNdzasfM9vrpxNOjGwdWBRmV7rR24OVFFuRvtDKnsdLzK%2FtfPwJtM5Ahk7m4bMphhPr1EJVHo8Z0qRHOskfQI5buuwhJKxuZKKEas%2FnmW%2BHsCE11fqr7535kDLJUGA9lsmqc3XoT1MZsovjpL2YmLxdhgFif4oq3pLyC5ioaj0T3g1wOq90n%2FOPtHBKn6twwfBZ2KAONECcjj8z9oHK2Y0LzhRHPRB2HUuAnIluhg%3D%3D HTTP/1.1" 200 0
+-2019-11-16 17:24:20,185 DEBUG   Thread-22 :6511 [connectionpool.py:_make_request():437] https://storage.googleapis.com:443 "PUT /wandb-production.appspot.com/ss80226/ppo-atari/ut0f7qfm/output.log?Expires=1573896319&GoogleAccessId=gorilla-cloud-storage%40wandb-production.iam.gserviceaccount.com&Signature=B6o4HaVnxmNXUGktl1OakBERDABr02v8Ta0Ue1%2BSqBA1KUJSbCtKIQh9RZXvZddWj5Hl3GYvN3UjoT0tBiqrYRrP1w2JLL9pv36eOGoC3RA%2F%2Fpai8St44UU30zzX%2FILNWvnr6NbUjvqb1UGBQedYaw%2BRI%2F9E9sIOhFhej0T0aoFeXOIW1ZlUE1rRVwidqAVyxmbrVMaJNEar0%2BRPXZ9ylZjQay8uTk0tQihfZRM0xvLTYTlD%2F6WNyqJa43qtNTFntgWmdZGdgWXAn0n4SqQULz5AmPVmBt5gRcQjTOt4%2FIz11gWSOatgZa3ahOzmSoE%2B%2Bwvr%2Bjw917JYDCrYoHDT%2BQ%3D%3D HTTP/1.1" 200 0
+-2019-11-16 17:24:20,380 DEBUG   Thread-24 :6511 [connectionpool.py:_new_conn():959] Starting new HTTPS connection (1): api.wandb.ai:443
+-2019-11-16 17:24:20,573 DEBUG   Thread-7  :6511 [connectionpool.py:_make_request():437] https://api.wandb.ai:443 "POST /files/ss80226/ppo-atari/ut0f7qfm/file_stream HTTP/1.1" 200 311
+-2019-11-16 17:24:20,605 DEBUG   Thread-24 :6511 [connectionpool.py:_make_request():437] https://api.wandb.ai:443 "POST /graphql HTTP/1.1" 200 753
+-2019-11-16 17:24:20,616 DEBUG   Thread-24 :6511 [connectionpool.py:_new_conn():959] Starting new HTTPS connection (1): storage.googleapis.com:443
+-2019-11-16 17:24:20,758 DEBUG   Thread-7  :6511 [connectionpool.py:_make_request():437] https://api.wandb.ai:443 "POST /files/ss80226/ppo-atari/ut0f7qfm/file_stream HTTP/1.1" 200 310
+-2019-11-16 17:24:20,760 INFO    MainThread:6511 [run_manager.py:_sync_etc():1376] process only ran for 7 seconds, not syncing files
+-2019-11-16 17:24:20,760 INFO    MainThread:6511 [ut0f7qfm:run_manager.py:_sync_etc():1376] process only ran for 7 seconds, not syncing files
++2019-11-16 23:56:00,306 DEBUG   MainThread:2010 [wandb_config.py:_load_defaults():110] no defaults not found in config-defaults.yaml
++2019-11-16 23:56:00,311 DEBUG   MainThread:2010 [cmd.py:execute():724] Popen(['git', 'cat-file', '--batch-check'], cwd=/home/ssbl/Desktop/PPO, universal_newlines=False, shell=None, istream=<valid stream>)
++2019-11-16 23:56:00,315 DEBUG   MainThread:2010 [cmd.py:execute():724] Popen(['git', 'rev-parse', '--show-toplevel'], cwd=/home/ssbl/Desktop/PPO, universal_newlines=False, shell=None, istream=None)
++2019-11-16 23:56:00,318 DEBUG   MainThread:2010 [cmd.py:execute():724] Popen(['git', 'status', '--porcelain', '--untracked-files'], cwd=/home/ssbl/Desktop/PPO, universal_newlines=False, shell=None, istream=None)
++2019-11-16 23:56:00,328 DEBUG   MainThread:2010 [run_manager.py:__init__():535] Initialized sync for ppo-atari/c3xmu5rf
++2019-11-16 23:56:00,330 INFO    MainThread:2010 [run_manager.py:wrap_existing_process():1131] wrapping existing process 2000
++2019-11-16 23:56:00,330 WARNING MainThread:2010 [io_wrap.py:register():104] SIGWINCH handler was not None: <Handlers.SIG_DFL: 0>
++2019-11-16 23:56:00,332 DEBUG   MainThread:2010 [connectionpool.py:_new_conn():959] Starting new HTTPS connection (1): pypi.org:443
++2019-11-16 23:56:00,470 DEBUG   MainThread:2010 [connectionpool.py:_make_request():437] https://pypi.org:443 "GET /pypi/wandb/json HTTP/1.1" 200 37669
++2019-11-16 23:56:00,512 INFO    MainThread:2010 [run_manager.py:init_run():916] system metrics and metadata threads started
++2019-11-16 23:56:00,513 INFO    MainThread:2010 [run_manager.py:init_run():950] upserting run before process can begin, waiting at most 10 seconds
++2019-11-16 23:56:00,540 DEBUG   Thread-14 :2010 [connectionpool.py:_new_conn():959] Starting new HTTPS connection (1): api.wandb.ai:443
++2019-11-16 23:56:00,776 DEBUG   Thread-14 :2010 [connectionpool.py:_make_request():437] https://api.wandb.ai:443 "POST /graphql HTTP/1.1" 200 515
++2019-11-16 23:56:00,791 INFO    Thread-14 :2010 [run_manager.py:_upsert_run():1035] saving patches
++2019-11-16 23:56:00,793 DEBUG   Thread-14 :2010 [cmd.py:execute():724] Popen(['git', 'rev-parse', '--show-toplevel'], cwd=/home/ssbl/Desktop/PPO, universal_newlines=False, shell=None, istream=None)
++2019-11-16 23:56:00,809 DEBUG   Thread-14 :2010 [cmd.py:execute():724] Popen(['git', 'diff', '--cached', '--abbrev=40', '--full-index', '--raw'], cwd=/home/ssbl/Desktop/PPO, universal_newlines=False, shell=None, istream=None)
++2019-11-16 23:56:00,819 DEBUG   Thread-14 :2010 [cmd.py:execute():724] Popen(['git', 'diff', '--abbrev=40', '--full-index', '--raw'], cwd=/home/ssbl/Desktop/PPO, universal_newlines=False, shell=None, istream=None)
++2019-11-16 23:56:00,829 DEBUG   Thread-14 :2010 [cmd.py:execute():724] Popen(['git', 'version'], cwd=/home/ssbl/Desktop/PPO, universal_newlines=False, shell=None, istream=None)

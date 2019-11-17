@@ -1,0 +1,6 @@
+{"actor_loss": 757.5173950195312, "critic_loss": 1455.5537109375, "_runtime": 4.645133018493652, "_timestamp": 1573919951.3020086, "_step": 0}
+{"actor_loss": 6.2303242683410645, "critic_loss": 1416.1806640625, "_runtime": 4.658874988555908, "_timestamp": 1573919951.3157506, "_step": 1}
+{"actor_loss": 5.449601173400879, "critic_loss": 1467.5947265625, "_runtime": 4.669609785079956, "_timestamp": 1573919951.3264854, "_step": 2}
+{"actor_loss": 146.89720153808594, "critic_loss": 3264.09228515625, "_runtime": 5.885209560394287, "_timestamp": 1573919952.5420852, "_step": 3}
+{"actor_loss": Infinity, "critic_loss": 3279.40771484375, "_runtime": 5.896418809890747, "_timestamp": 1573919952.5532944, "_step": 4}
+{"actor_loss": NaN, "critic_loss": 3385.790283203125, "_runtime": 5.905578136444092, "_timestamp": 1573919952.5624537, "_step": 5}

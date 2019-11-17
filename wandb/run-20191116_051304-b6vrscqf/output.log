@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "train.py", line 36, in <module>
+    mu_vector, sigma_vector = policy(state_tensor)
+  File "/home/ssbl/anaconda3/envs/ml/lib/python3.7/site-packages/torch/nn/modules/module.py", line 541, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/home/ssbl/Desktop/PPO/network.py", line 22, in forward
+    mu_vector = x[0][0:action_dim].unsqueeze(0)
+NameError: name 'action_dim' is not defined

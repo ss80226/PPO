@@ -1,0 +1,88 @@
+-117.79295776666514
+-93.15957791824033
+-93.00658981804612
+-92.71000512585137
+tensor(-2.1741, device='cuda:0', grad_fn=<NegBackward>)
+-------------------------
+episode: 0, actor_loss: 1.390761137008667, critic_losss: 38.41401672363281
+tensor(-4.2123, device='cuda:0', grad_fn=<NegBackward>)
+-------------------------
+episode: 0, actor_loss: 5.160867691040039, critic_losss: 74.20986938476562
+tensor(-3.5201, device='cuda:0', grad_fn=<NegBackward>)
+-------------------------
+episode: 0, actor_loss: 7.729221820831299, critic_losss: 226.75701904296875
+tensor(-1.6143, device='cuda:0', grad_fn=<NegBackward>)
+tensor(-1.2882, device='cuda:0', grad_fn=<NegBackward>)
+tensor(-1.1744, device='cuda:0', grad_fn=<NegBackward>)
+tensor(0.4206, device='cuda:0', grad_fn=<NegBackward>)
+tensor(0.6138, device='cuda:0', grad_fn=<NegBackward>)
+tensor(1.0051, device='cuda:0', grad_fn=<NegBackward>)
+-96.73886666247124
+tensor(2.1170, device='cuda:0', grad_fn=<NegBackward>)
+tensor(2.0514, device='cuda:0', grad_fn=<NegBackward>)
+tensor(2.1459, device='cuda:0', grad_fn=<NegBackward>)
+-119.56101340869876
+-101.95375115879563
+-95.66109347425277
+-97.93183450859163
+-97.49447302930491
+-99.63850042306818
+-118.15786476058949
+tensor(2.0627, device='cuda:0', grad_fn=<NegBackward>)
+tensor(1.8494, device='cuda:0', grad_fn=<NegBackward>)
+tensor(2.2728, device='cuda:0', grad_fn=<NegBackward>)
+tensor(3.0881, device='cuda:0', grad_fn=<NegBackward>)
+tensor(3.1892, device='cuda:0', grad_fn=<NegBackward>)
+tensor(3.2170, device='cuda:0', grad_fn=<NegBackward>)
+-99.36523927900691
+-115.25935604534236
+-102.95980088309199
+tensor(2.6063, device='cuda:0', grad_fn=<NegBackward>)
+tensor(2.4340, device='cuda:0', grad_fn=<NegBackward>)
+tensor(2.3791, device='cuda:0', grad_fn=<NegBackward>)
+-103.25637449694115
+-99.98052468953033
+-105.99398281824278
+tensor(3.5886, device='cuda:0', grad_fn=<NegBackward>)
+tensor(3.8213, device='cuda:0', grad_fn=<NegBackward>)
+tensor(3.6256, device='cuda:0', grad_fn=<NegBackward>)
+-105.1100064553637
+-100.8036184167657
+-99.39243722504999
+-103.26784257452812
+-117.99569678014828
+-102.44363160084188
+tensor(3.7976, device='cuda:0', grad_fn=<NegBackward>)
+tensor(3.6084, device='cuda:0', grad_fn=<NegBackward>)
+tensor(3.8816, device='cuda:0', grad_fn=<NegBackward>)
+-102.401585470307
+-98.48206286242045
+-99.32483329918236
+-111.37809893068547
+-100.56084819880066
+-103.24419818332233
+-98.68430187790841
+tensor(3.7368, device='cuda:0', grad_fn=<NegBackward>)
+tensor(3.6663, device='cuda:0', grad_fn=<NegBackward>)
+tensor(3.7714, device='cuda:0', grad_fn=<NegBackward>)
+-98.8147158697378
+-142.74939044244496
+tensor(4.1082, device='cuda:0', grad_fn=<NegBackward>)
+-------------------------
+episode: 10, actor_loss: 13.452518463134766, critic_losss: 1377.520263671875
+tensor(4.1238, device='cuda:0', grad_fn=<NegBackward>)
+-------------------------
+episode: 10, actor_loss: 8.45922565460205, critic_losss: 848.3897705078125
+tensor(3.8395, device='cuda:0', grad_fn=<NegBackward>)
+-------------------------
+episode: 10, actor_loss: 17.956140518188477, critic_losss: 1063.1568603515625
+-121.94140010750232
+-152.26328158301794
+-101.2976656025822
+-106.80485778579985
+-98.63167240691868
+-100.44855085400555
+tensor(4.1220, device='cuda:0', grad_fn=<NegBackward>)
+tensor(4.1112, device='cuda:0', grad_fn=<NegBackward>)
+tensor(4.3615, device='cuda:0', grad_fn=<NegBackward>)
+-118.60271897335039

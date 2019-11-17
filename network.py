@@ -20,8 +20,11 @@ class Network(nn.Module):
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = self.outLayer(x)
-        mu_vector = x[0][0:self.action_dim].unsqueeze(0)
-        sigma_vector = x[0][self.action_dim:self.action_dim*2].unsqueeze(0)
+        # print(x.shape)
+        # print(x)
+        mu_vector = x[:, 0:self.action_dim]
+        # print(mu_vector)
+        sigma_vector = x[:, self.action_dim:self.action_dim*2]
         sigma_vector = torch.abs(sigma_vector)
         return mu_vector, sigma_vector
     def act(self, mu_vector, sigma_vector):
@@ -32,13 +35,15 @@ class Network(nn.Module):
         '''
         action_vector = torch.distributions.normal.Normal(mu_vector, sigma_vector).sample()
         action_vector = torch.clamp(action_vector, -1., 1.) # clipping value into the a ~ (action_space.low, action_space.high)
+        # print()
         return action_vector
     def logp(self, state, action):
         mu_vector, sigma_vector = self.forward(state)
         dist = torch.distributions.normal.Normal(mu_vector, sigma_vector)
         logp_vector = dist.log_prob(action)
-
+        # print(logp_vector)
         logp_joint = logp_vector.sum(dim=1, keepdim=True)
+        # print(logp_joint)
         # print(logp_joint)
         return logp_joint
 
@@ -48,9 +53,11 @@ class ValueNet(nn.Module):
         self.state_dim = args['state_dim']
         self.fc1 = nn.Linear(self.state_dim, 256)
         self.fc2 = nn.Linear(256, 128)
-        self.fc3 = nn.Linear(128, 1)
+        self.fc3 = nn.Linear(128, 64)
+        self.fc4 = nn.Linear(64, 1)
     def forward(self, x):
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
-        x = self.fc3(x)
+        x = F.relu(self.fc3(x))
+        x = self.fc4(x)
         return x

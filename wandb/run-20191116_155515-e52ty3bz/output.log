@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "train.py", line 79, in <module>
+    actor_loss, critic_loss =  ppo.update(replay_buffer)
+  File "/home/ssbl/Desktop/PPO/ppo.py", line 39, in update
+    state_array, action_array, reward_array, logp_old_array, true_state_value_array, advantage_array = replay_buffer.sample(BATCH_SIZE*ENV_SIZE)
+  File "/home/ssbl/Desktop/PPO/replay_buffer.py", line 88, in sample
+    sample_batch = [None for i in range(batch_size)]
+NameError: name 'batch_size' is not defined

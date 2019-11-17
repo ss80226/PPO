@@ -1,0 +1,25 @@
+{
+    "root": "/home/ssbl/Desktop/PPO",
+    "program": "train.py",
+    "git": {
+        "remote": "https://github.com/ss80226/PPO.git",
+        "commit": "d302c5706cbed74f407437dedf108cbf8ca58f73"
+    },
+    "email": "justin80226@gmail.com",
+    "startedAt": "2019-11-16T09:02:19.846843",
+    "host": "faustus",
+    "username": "ssbl",
+    "executable": "/home/ssbl/anaconda3/envs/ml/bin/python",
+    "os": "Linux-5.0.0-32-generic-x86_64-with-debian-buster-sid",
+    "python": "3.7.4",
+    "gpu": "GeForce GTX 1080 Ti",
+    "gpu_count": 1,
+    "cpu_count": 8,
+    "args": [],
+    "state": "killed",
+    "jobType": null,
+    "mode": "run",
+    "project": "ppo-atari",
+    "heartbeatAt": "2019-11-16T09:02:28.314957",
+    "exitcode": 255
+}

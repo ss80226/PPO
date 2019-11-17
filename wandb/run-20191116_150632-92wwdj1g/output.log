@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "train.py", line 20, in <module>
+    replay_buffer = ReplayBuffer(BUFFER_SIZE)
+  File "/home/ssbl/Desktop/PPO/replay_buffer.py", line 10, in __init__
+    self.env_size = ENV_SIZE
+NameError: name 'ENV_SIZE' is not defined

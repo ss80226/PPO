@@ -17,6 +17,7 @@ EPISLON = 0.2
 LEARNING_RATE = 0.0002
 VF_COEFF = 1
 ENTROPY_COEFF = 0.01
+ENV_SIZE = 8
 # WEIGHT_DECAY = 0.99
 # MOMENTUM = 0.9
 
@@ -66,7 +67,7 @@ class PPO(object):
         # print(clip_loss)
         mu_vector_batch, sigma_vector_batch = self.policy(state_batch)
         # state_entropy_batch = torch.mean(torch.distributions.normal.Normal(mu_vector_batch, sigma_vector_batch).entropy())
-        # print(logp_batch.shape)
+        # print(true_state_value_batch)
         state_entropy_batch = logp_batch
         entropy_loss = -torch.mean(state_entropy_batch)
         actor_loss = clip_loss + ENTROPY_COEFF*entropy_loss
@@ -76,10 +77,14 @@ class PPO(object):
 
         self.policy_optimizer.zero_grad()
         actor_loss.backward()
+        for param in self.policy.parameters():
+                param.grad.data.clamp_(-1, 1)
         self.policy_optimizer.step()
 
         self.value_net_optimizer.zero_grad()
         critic_loss.backward()
+        for param in self.value_net.parameters():
+                param.grad.data.clamp_(-1, 1)
         self.value_net_optimizer.step()
         return actor_loss, critic_loss
         

@@ -1,0 +1,72 @@
+-------------------------
+episode: 0, actor_loss: 234.48548889160156, critic_losss: 4022.714599609375
+-------------------------
+episode: 0, actor_loss: 14.118176460266113, critic_losss: 4476.0986328125
+-------------------------
+episode: 0, actor_loss: 11.390902519226074, critic_losss: 3965.873779296875
+-------------------------
+episode: 10, actor_loss: 23.19563102722168, critic_losss: 4817.9990234375
+-------------------------
+episode: 10, actor_loss: 25.934659957885742, critic_losss: 4813.4970703125
+-------------------------
+episode: 10, actor_loss: 22.72367286682129, critic_losss: 5216.20458984375
+-------------------------
+episode: 20, actor_loss: 12.834033012390137, critic_losss: 1316.6414794921875
+-------------------------
+episode: 20, actor_loss: 4.411910057067871, critic_losss: 1083.6387939453125
+-------------------------
+episode: 20, actor_loss: 5.104867935180664, critic_losss: 1280.5343017578125
+-------------------------
+episode: 30, actor_loss: 7.018317222595215, critic_losss: 1315.37841796875
+-------------------------
+episode: 30, actor_loss: 7.763804912567139, critic_losss: 1477.362060546875
+-------------------------
+episode: 30, actor_loss: 6.188638210296631, critic_losss: 1216.5830078125
+-------------------------
+episode: 40, actor_loss: 17.195573806762695, critic_losss: 2839.446044921875
+-------------------------
+episode: 40, actor_loss: 17.00667953491211, critic_losss: 2490.6611328125
+-------------------------
+episode: 40, actor_loss: 17.45719337463379, critic_losss: 2830.021484375
+-------------------------
+episode: 50, actor_loss: 2.936643600463867, critic_losss: 434.7216796875
+-------------------------
+episode: 50, actor_loss: 8.710153579711914, critic_losss: 611.2041625976562
+-------------------------
+episode: 50, actor_loss: 2.463331937789917, critic_losss: 435.2840881347656
+-------------------------
+episode: 60, actor_loss: 9.566122055053711, critic_losss: 1659.5687255859375
+-------------------------
+episode: 60, actor_loss: 7.697975158691406, critic_losss: 1824.2271728515625
+-------------------------
+episode: 60, actor_loss: 8.25256633758545, critic_losss: 1978.3077392578125
+-------------------------
+episode: 70, actor_loss: 6.416004180908203, critic_losss: 327.5135192871094
+-------------------------
+episode: 70, actor_loss: 5.868663787841797, critic_losss: 585.9597778320312
+-------------------------
+episode: 70, actor_loss: 3.654086112976074, critic_losss: 333.20404052734375
+-------------------------
+episode: 80, actor_loss: 14.27822208404541, critic_losss: 2197.04248046875
+-------------------------
+episode: 80, actor_loss: 6.614021301269531, critic_losss: 2178.25146484375
+-------------------------
+episode: 80, actor_loss: 12.631980895996094, critic_losss: 2558.211181640625
+-------------------------
+episode: 90, actor_loss: 1.4557465314865112, critic_losss: 59.290863037109375
+-------------------------
+episode: 90, actor_loss: 1.3640766143798828, critic_losss: 55.746952056884766
+-------------------------
+episode: 90, actor_loss: 1.7775158882141113, critic_losss: 61.112571716308594
+-------------------------
+episode: 100, actor_loss: 9.631898880004883, critic_losss: 1815.7451171875
+-------------------------
+episode: 100, actor_loss: 8.82575511932373, critic_losss: 1803.02685546875
+-------------------------
+episode: 100, actor_loss: 5.385672569274902, critic_losss: 1523.4393310546875
+Traceback (most recent call last):
+  File "train.py", line 40, in <module>
+    next_state, reward, done, _ = env.step(action_tensor.cpu().squeeze(0).numpy())
+  File "/home/ssbl/anaconda3/envs/ml/lib/python3.7/site-packages/gym/envs/box2d/bipedal_walker.py", line 405, in step
+    self.world.RayCast(self.lidar[i], self.lidar[i].p1, self.lidar[i].p2)
+AssertionError: r.LengthSquared() > 0.0f
