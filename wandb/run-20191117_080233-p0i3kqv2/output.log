@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "train.py", line 61, in <module>
+    print(np.mean(reward))
+NameError: name 'np' is not defined

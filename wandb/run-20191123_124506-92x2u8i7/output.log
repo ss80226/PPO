@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "train2.py", line 35, in <module>
+    ppo.policy.reset()
+  File "/home/ssbl/anaconda3/envs/ml/lib/python3.7/site-packages/torch/nn/modules/module.py", line 585, in __getattr__
+    type(self).__name__, name))
+AttributeError: 'Network' object has no attribute 'reset'

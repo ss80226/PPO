@@ -1,0 +1,147 @@
+3582
+-------------------------
+episode: 0, actor_loss: 1887.6025390625, critic_losss: 4241.78466796875
+3582
+-------------------------
+episode: 0, actor_loss: 1591.86962890625, critic_losss: 3819.82470703125
+3582
+-------------------------
+episode: 0, actor_loss: 1856.55322265625, critic_losss: 3801.63671875
+3679
+3679
+3679
+3584
+3584
+3584
+3618
+3618
+3618
+3554
+3554
+3554
+3796
+3796
+3796
+3410
+3410
+3410
+3458
+3458
+3458
+3330
+3330
+3330
+3239
+3239
+3239
+2756
+-------------------------
+episode: 10, actor_loss: 134.61570739746094, critic_losss: 5052.0458984375
+2756
+-------------------------
+episode: 10, actor_loss: 87.27518463134766, critic_losss: 4960.78173828125
+2756
+-------------------------
+episode: 10, actor_loss: 70.04634094238281, critic_losss: 5108.14453125
+2807
+2807
+2807
+2591
+2591
+2591
+2464
+2464
+2464
+2330
+2330
+2330
+1955
+1955
+1955
+1854
+1854
+1854
+1747
+1747
+1747
+1955
+1955
+1955
+1750
+1750
+1750
+2389
+-------------------------
+episode: 20, actor_loss: 30.950782775878906, critic_losss: 5140.57373046875
+2389
+-------------------------
+episode: 20, actor_loss: 29.71065330505371, critic_losss: 5162.2109375
+2389
+-------------------------
+episode: 20, actor_loss: 29.315719604492188, critic_losss: 5244.8603515625
+2587
+2587
+2587
+2017
+2017
+2017
+1837
+1837
+1837
+2266
+2266
+2266
+1260
+1260
+1260
+1716
+1716
+1716
+1368
+1368
+1368
+1945
+1945
+1945
+1979
+1979
+1979
+1664
+-------------------------
+episode: 30, actor_loss: 28.774784088134766, critic_losss: 5111.44775390625
+1664
+-------------------------
+episode: 30, actor_loss: 25.74808692932129, critic_losss: 5074.28466796875
+1664
+-------------------------
+episode: 30, actor_loss: 29.367734909057617, critic_losss: 5204.03173828125
+1354
+1354
+1354
+1870
+1870
+1870
+2301
+2301
+2301
+Exception ignored in: <function b2JointDef.__del__ at 0x7fe37806ad40>
+Traceback (most recent call last):
+  File "/home/ssbl/anaconda3/envs/ml/lib/python3.7/site-packages/Box2D/Box2D.py", line 6762, in __del__
+Traceback (most recent call last):
+  File "train.py", line 46, in <module>
+    next_state, reward, done, _ = env.step(tuple(action_tensor.cpu().numpy()))
+  File "/home/ssbl/anaconda3/envs/ml/lib/python3.7/site-packages/gym/vector/vector_env.py", line 80, in step
+    return self.step_wait()
+  File "/home/ssbl/anaconda3/envs/ml/lib/python3.7/site-packages/gym/vector/async_vector_env.py", line 232, in step_wait
+    results, successes = zip(*[pipe.recv() for pipe in self.parent_pipes])
+  File "/home/ssbl/anaconda3/envs/ml/lib/python3.7/site-packages/gym/vector/async_vector_env.py", line 232, in <listcomp>
+    results, successes = zip(*[pipe.recv() for pipe in self.parent_pipes])
+  File "/home/ssbl/anaconda3/envs/ml/lib/python3.7/multiprocessing/connection.py", line 250, in recv
+    buf = self._recv_bytes()
+  File "/home/ssbl/anaconda3/envs/ml/lib/python3.7/multiprocessing/connection.py", line 407, in _recv_bytes
+    buf = self._recv(4)
+  File "/home/ssbl/anaconda3/envs/ml/lib/python3.7/multiprocessing/connection.py", line 379, in _recv
+    chunk = read(handle, remaining)
+KeyboardInterrupt
+    self.ClearUserData()
+KeyboardInterrupt

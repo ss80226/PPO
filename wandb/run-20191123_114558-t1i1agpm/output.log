@@ -1,0 +1,20 @@
+Traceback (most recent call last):
+  File "train.py", line 44, in <module>
+    mu_vector, sigma_vector = policy(state_tensor)
+  File "/home/ssbl/anaconda3/envs/ml/lib/python3.7/site-packages/torch/nn/modules/module.py", line 541, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/home/ssbl/Desktop/PPO/network.py", line 72, in forward
+    r_out, (h_n, h_c) = self.rnn(x, None)
+  File "/home/ssbl/anaconda3/envs/ml/lib/python3.7/site-packages/torch/nn/modules/module.py", line 541, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/home/ssbl/anaconda3/envs/ml/lib/python3.7/site-packages/torch/nn/modules/rnn.py", line 564, in forward
+    return self.forward_tensor(input, hx)
+  File "/home/ssbl/anaconda3/envs/ml/lib/python3.7/site-packages/torch/nn/modules/rnn.py", line 543, in forward_tensor
+    output, hidden = self.forward_impl(input, hx, batch_sizes, max_batch_size, sorted_indices)
+  File "/home/ssbl/anaconda3/envs/ml/lib/python3.7/site-packages/torch/nn/modules/rnn.py", line 523, in forward_impl
+    self.check_forward_args(input, hx, batch_sizes)
+  File "/home/ssbl/anaconda3/envs/ml/lib/python3.7/site-packages/torch/nn/modules/rnn.py", line 496, in check_forward_args
+    self.check_input(input, batch_sizes)
+  File "/home/ssbl/anaconda3/envs/ml/lib/python3.7/site-packages/torch/nn/modules/rnn.py", line 145, in check_input
+    expected_input_dim, input.dim()))
+RuntimeError: input must have 3 dimensions, got 2

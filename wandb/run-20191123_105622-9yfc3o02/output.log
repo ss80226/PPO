@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "train.py", line 53, in <module>
+    if done[i] == True:
+IndexError: index 4 is out of bounds for axis 0 with size 4

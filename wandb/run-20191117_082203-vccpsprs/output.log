@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "train.py", line 82, in <module>
+    replay_buffer.update_true_state_value()
+  File "/home/ssbl/Desktop/PPO/replay_buffer.py", line 63, in update_true_state_value
+    if self.terminenv_sizeate_buffer[i][update_index] == 0 and update_index != self.size-1:
+AttributeError: 'ReplayBuffer' object has no attribute 'terminenv_sizeate_buffer'

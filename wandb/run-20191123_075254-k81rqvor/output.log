@@ -1,0 +1,16 @@
+-------------------------
+episode: 0, actor_loss: 2.3958802223205566, critic_losss: 484.5849304199219
+-------------------------
+episode: 0, actor_loss: 3.3782176971435547, critic_losss: 596.4302978515625
+-------------------------
+episode: 0, actor_loss: 3.7217626571655273, critic_losss: 636.314208984375
+Traceback (most recent call last):
+  File "train.py", line 90, in <module>
+    actor_loss, critic_loss =  ppo.update(replay_buffer)
+  File "/home/ssbl/Desktop/PPO/ppo.py", line 40, in update
+    state_array, action_array, reward_array, logp_old_array, true_state_value_array, advantage_array = replay_buffer.sample(BATCH_SIZE)
+  File "/home/ssbl/Desktop/PPO/replay_buffer.py", line 123, in sample
+    sample_index = random.sample(index_array, index)
+  File "/home/ssbl/anaconda3/envs/ml/lib/python3.7/random.py", line 321, in sample
+    raise ValueError("Sample larger than population or is negative")
+ValueError: Sample larger than population or is negative

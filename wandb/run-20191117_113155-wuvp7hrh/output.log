@@ -1,0 +1,7 @@
+13587
+Traceback (most recent call last):
+  File "train.py", line 87, in <module>
+    actor_loss, critic_loss =  ppo.update(replay_buffer)
+  File "/home/ssbl/Desktop/PPO/ppo.py", line 66, in update
+    clip_loss = -torch.mean(torch.min(ratio_batch * advantage_batch, ratio_clip_batch * advantage_batch))
+RuntimeError: CUDA out of memory. Tried to allocate 4.00 GiB (GPU 0; 10.91 GiB total capacity; 8.01 GiB already allocated; 121.94 MiB free; 12.91 MiB cached)

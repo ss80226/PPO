@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "train.py", line 22, in <module>
+    ppo = PPO(POLICY_ARGS)
+  File "/home/ssbl/Desktop/PPO/ppo.py", line 26, in __init__
+    self.state_dim = args['statenv_size_dim']
+KeyError: 'statenv_size_dim'

@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "train.py", line 74, in <module>
+    actor_loss, critic_loss =  ppo.update(replay_buffer)
+  File "/home/ssbl/Desktop/PPO/ppo.py", line 51, in update
+    logp_batch = self.policy.logp(state_batch, action_batch)
+  File "/home/ssbl/Desktop/PPO/network.py", line 88, in logp
+    mu_vector, sigma_vector = self.forward(state)
+  File "/home/ssbl/Desktop/PPO/network.py", line 103, in forward
+    x = self.rnn(x, h_0)
+  File "/home/ssbl/anaconda3/envs/ml/lib/python3.7/site-packages/torch/nn/modules/module.py", line 541, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/home/ssbl/anaconda3/envs/ml/lib/python3.7/site-packages/torch/nn/modules/rnn.py", line 1019, in forward
+    self.check_forward_hidden(input, hx, '')
+  File "/home/ssbl/anaconda3/envs/ml/lib/python3.7/site-packages/torch/nn/modules/rnn.py", line 769, in check_forward_hidden
+    input.size(0), hidden_label, hx.size(0)))
+RuntimeError: Input batch size 256 doesn't match hidden batch size 4

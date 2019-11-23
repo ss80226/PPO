@@ -1,0 +1,19 @@
+7981
+torch.Size([512, 1])
+torch.Size([512, 1])
+torch.Size([512, 512, 1])
+torch.Size([512])
+-------------------------
+episode: 0, actor_loss: 118.02996826171875, critic_losss: 641.7957153320312
+torch.Size([512, 1])
+torch.Size([512, 1])
+torch.Size([512, 512, 1])
+torch.Size([512])
+-------------------------
+episode: 0, actor_loss: 22.079084396362305, critic_losss: 644.4840087890625
+torch.Size([512, 1])
+torch.Size([512, 1])
+torch.Size([512, 512, 1])
+torch.Size([512])
+-------------------------
+episode: 0, actor_loss: 14.140562057495117, critic_losss: 583.4085693359375

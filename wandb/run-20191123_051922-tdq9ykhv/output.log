@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "test2.py", line 114, in <module>
+    mu_vector, sigma_vector = policy(state_tensor)
+  File "/home/ssbl/anaconda3/envs/ml/lib/python3.7/site-packages/torch/nn/modules/module.py", line 541, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/home/ssbl/Desktop/PPO/network.py", line 30, in forward
+    mu_vector = x[:, 0:self.action_dim]
+IndexError: too many indices for tensor of dimension 1

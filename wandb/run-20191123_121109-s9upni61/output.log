@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "train.py", line 47, in <module>
+    action_tensor = policy.act(mu_vector, sigma_vector)
+  File "/home/ssbl/anaconda3/envs/ml/lib/python3.7/site-packages/torch/nn/modules/module.py", line 585, in __getattr__
+    type(self).__name__, name))
+AttributeError: 'LSTM' object has no attribute 'act'

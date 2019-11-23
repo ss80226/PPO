@@ -1,0 +1,13 @@
+6800
+torch.Size([512, 1])
+torch.Size([512, 1])
+-------------------------
+episode: 0, actor_loss: 331.81304931640625, critic_losss: 4298.4013671875
+torch.Size([512, 1])
+torch.Size([512, 1])
+-------------------------
+episode: 0, actor_loss: 62.70821762084961, critic_losss: 4163.1259765625
+torch.Size([512, 1])
+torch.Size([512, 1])
+-------------------------
+episode: 0, actor_loss: 42.09585189819336, critic_losss: 4383.1044921875

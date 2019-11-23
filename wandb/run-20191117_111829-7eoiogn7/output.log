@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "train.py", line 85, in <module>
+    replay_buffer.merge_trajectory()
+  File "/home/ssbl/Desktop/PPO/replay_buffer.py", line 109, in merge_trajectory
+    index = batch_size
+NameError: name 'batch_size' is not defined

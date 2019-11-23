@@ -1,0 +1,21 @@
+12523
+-------------------------
+episode: 0, actor_loss: 141.8834991455078, critic_losss: 343.50823974609375
+-------------------------
+episode: 0, actor_loss: 51.55906677246094, critic_losss: 384.56561279296875
+-------------------------
+episode: 0, actor_loss: 13.070323944091797, critic_losss: 411.7409362792969
+13750
+11873
+15429
+12918
+14702
+12931
+12868
+14666
+Traceback (most recent call last):
+  File "train.py", line 83, in <module>
+    replay_buffer.update_true_state_value()
+  File "/home/ssbl/Desktop/PPO/replay_buffer.py", line 64, in update_true_state_value
+    if self.terminate_buffer[i][update_index] == 0 and update_index != self.size-1:
+KeyboardInterrupt

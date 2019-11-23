@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "test2.py", line 111, in <module>
+    time.sleep(0.05)
+NameError: name 'time' is not defined

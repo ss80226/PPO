@@ -1,0 +1,2 @@
+tensor(1110.6897, device='cuda:0', grad_fn=<AddBackward0>)
+torch.Size([])

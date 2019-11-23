@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "train.py", line 90, in <module>
+    actor_loss, critic_loss =  ppo.update(replay_buffer)
+  File "/home/ssbl/Desktop/PPO/ppo.py", line 40, in update
+    state_array, action_array, reward_array, logp_old_array, true_state_value_array, advantage_array = replay_buffer.sample(BATCH_SIZE)
+  File "/home/ssbl/Desktop/PPO/replay_buffer.py", line 137, in sample
+    self.state_sample_batch[i] = self.state_sample_batch_tmp[element]
+IndexError: index 256 is out of bounds for axis 0 with size 256

@@ -1,0 +1,66 @@
+-------------------------
+episode: 0, actor_loss: 731.544921875, critic_losss: 3340.22119140625
+-------------------------
+episode: 0, actor_loss: 48.75604248046875, critic_losss: 2984.685546875
+-------------------------
+episode: 0, actor_loss: 20.612886428833008, critic_losss: 2976.22119140625
+-------------------------
+episode: 10, actor_loss: 6.192689418792725, critic_losss: 1390.609130859375
+-------------------------
+episode: 10, actor_loss: 5.707063674926758, critic_losss: 1508.9215087890625
+-------------------------
+episode: 10, actor_loss: 5.663381576538086, critic_losss: 1385.6204833984375
+-------------------------
+episode: 20, actor_loss: 15.2962007522583, critic_losss: 3706.437255859375
+-------------------------
+episode: 20, actor_loss: 15.75557804107666, critic_losss: 3780.2880859375
+-------------------------
+episode: 20, actor_loss: 12.679054260253906, critic_losss: 3446.37744140625
+-------------------------
+episode: 30, actor_loss: 9.286188125610352, critic_losss: 2406.30712890625
+-------------------------
+episode: 30, actor_loss: 11.691601753234863, critic_losss: 2715.908447265625
+-------------------------
+episode: 30, actor_loss: 10.581476211547852, critic_losss: 2609.511474609375
+-------------------------
+episode: 40, actor_loss: 9.311554908752441, critic_losss: 2117.0400390625
+-------------------------
+episode: 40, actor_loss: 7.244593143463135, critic_losss: 1876.52978515625
+-------------------------
+episode: 40, actor_loss: 7.761490821838379, critic_losss: 1954.3450927734375
+-------------------------
+episode: 50, actor_loss: 5.017846584320068, critic_losss: 1334.089599609375
+-------------------------
+episode: 50, actor_loss: 4.335903644561768, critic_losss: 1080.97314453125
+-------------------------
+episode: 50, actor_loss: 4.1236042976379395, critic_losss: 1099.62841796875
+-------------------------
+episode: 60, actor_loss: 8.188031196594238, critic_losss: 1925.4962158203125
+-------------------------
+episode: 60, actor_loss: 7.111826419830322, critic_losss: 1886.99951171875
+-------------------------
+episode: 60, actor_loss: 8.268784523010254, critic_losss: 1935.107421875
+-------------------------
+episode: 70, actor_loss: 4.609859466552734, critic_losss: 1191.457275390625
+-------------------------
+episode: 70, actor_loss: 4.9193267822265625, critic_losss: 1187.555908203125
+-------------------------
+episode: 70, actor_loss: 5.036127090454102, critic_losss: 1296.143310546875
+-------------------------
+episode: 80, actor_loss: 0.4341255724430084, critic_losss: 594.8270263671875
+-------------------------
+episode: 80, actor_loss: 2.0782227516174316, critic_losss: 768.5443115234375
+-------------------------
+episode: 80, actor_loss: 1.1484849452972412, critic_losss: 671.4793701171875
+-------------------------
+episode: 90, actor_loss: 0.021864842623472214, critic_losss: 587.267333984375
+-------------------------
+episode: 90, actor_loss: 0.3145144581794739, critic_losss: 615.476806640625
+-------------------------
+episode: 90, actor_loss: 0.4585544764995575, critic_losss: 626.33544921875
+Traceback (most recent call last):
+  File "train.py", line 65, in <module>
+    replay_buffer.store(state=state_tensor.cpu().numpy(), action=action_tensor.cpu().numpy(), logp=logp_tensor.cpu().numpy(), reward=reward, state_value=state_value_tensor.cpu().numpy(), isTerminate=done)
+  File "/home/ssbl/Desktop/PPO/replay_buffer.py", line 46, in store
+    self.terminate_buffer[i][self.current_index] = 1 if isTerminate[i]==True else 0
+KeyboardInterrupt

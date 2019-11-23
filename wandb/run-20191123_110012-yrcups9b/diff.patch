@@ -1,0 +1,434 @@
+diff --git a/__pycache__/network.cpython-37.pyc b/__pycache__/network.cpython-37.pyc
+index bb41b64..83a40ec 100644
+Binary files a/__pycache__/network.cpython-37.pyc and b/__pycache__/network.cpython-37.pyc differ
+diff --git a/__pycache__/ppo.cpython-37.pyc b/__pycache__/ppo.cpython-37.pyc
+index ab797f2..04299aa 100644
+Binary files a/__pycache__/ppo.cpython-37.pyc and b/__pycache__/ppo.cpython-37.pyc differ
+diff --git a/__pycache__/replay_buffer.cpython-37.pyc b/__pycache__/replay_buffer.cpython-37.pyc
+index 1beb885..23bc660 100644
+Binary files a/__pycache__/replay_buffer.cpython-37.pyc and b/__pycache__/replay_buffer.cpython-37.pyc differ
+diff --git a/network.py b/network.py
+index 65402ae..85a0696 100644
+--- a/network.py
++++ b/network.py
+@@ -13,6 +13,7 @@ class Network(nn.Module):
+         super(Network, self).__init__()
+         self.action_dim = args['action_dim']
+         self.state_dim = args['state_dim']
++        self.isTrain = args['is_train']
+         self.fc1 = nn.Linear(args['state_dim'], 256)
+         self.fc2 = nn.Linear(256, 128)
+         self.outLayer = nn.Linear(128, args['action_dim']*2) # action_dim * (mean, standard_deviation)
+@@ -22,10 +23,16 @@ class Network(nn.Module):
+         x = self.outLayer(x)
+         # print(x.shape)
+         # print(x)
+-        mu_vector = x[:, 0:self.action_dim]
++        if self.isTrain == False:
++            mu_vector = x[0:self.action_dim]
++            sigma_vector = x[self.action_dim:self.action_dim*2]
++        else:
++            mu_vector = x[:, 0:self.action_dim]
++            sigma_vector = x[:, self.action_dim:self.action_dim*2]
++        mu_vector = torch.tanh(mu_vector)
+         # print(mu_vector)
+-        sigma_vector = x[:, self.action_dim:self.action_dim*2]
+-        sigma_vector = torch.abs(sigma_vector)
++        sigma_vector = F.softplus(sigma_vector)
++        
+         return mu_vector, sigma_vector
+     def act(self, mu_vector, sigma_vector):
+         '''
+diff --git a/ppo.py b/ppo.py
+index 985dfad..d593415 100644
+--- a/ppo.py
++++ b/ppo.py
+@@ -10,13 +10,13 @@ DEVICE = 'cuda' if GPU else 'cpu'
+ BATCH_SIZE = 256
+ INPUT_DIM = 24
+ ACTION_DIM = 4
+-BUFFER_SIZE = 1024
++# BUFFER_SIZE = 1024
++isTrain = True
+ EPOCHS = 3
+-POLICY_ARGS = {'state_dim': INPUT_DIM, 'action_dim': ACTION_DIM}
+ EPISLON = 0.2
+ LEARNING_RATE = 0.0002
+ VF_COEFF = 1
+-ENTROPY_COEFF = 0.01
++ENTROPY_COEFF = 0.000001
+ ENV_SIZE = 8
+ # WEIGHT_DECAY = 0.99
+ # MOMENTUM = 0.9
+@@ -25,66 +25,70 @@ class PPO(object):
+     def __init__(self, args):
+         self.state_dim = args['state_dim']
+         self.action_dim = args['action_dim']
++        self.batch_size = args['batch_size']
++        self.network_args = {'state_dim': self.state_dim, 'action_dim': self.action_dim, 'is_train': args['is_train']}
+         # network_args = {'state_dim': self.state_dim, 'action_dim': self.action_dim}
+-        self.policy = Network(POLICY_ARGS).to(DEVICE)
+-        self.value_net = ValueNet(POLICY_ARGS).to(DEVICE)
++        self.policy = Network(self.network_args).to(DEVICE)
++        self.value_net = ValueNet(self.network_args).to(DEVICE)
+         self.mse = nn.MSELoss()
+-        self.policy_optimizer = optim.SGD(self.policy.parameters(), lr=LEARNING_RATE)
+-        self.value_net_optimizer = optim.SGD(self.value_net.parameters(), lr=LEARNING_RATE)
++        self.policy_optimizer = optim.Adam(self.policy.parameters(), lr=LEARNING_RATE)
++        self.value_net_optimizer = optim.Adam(self.value_net.parameters(), lr=LEARNING_RATE)
+         # self.replay_buffer = ReplayBuffer(BUFFER_SIZE)
+     def update(self, replay_buffer):
+         '''
+         update policy by sample from replay buffer 
+         '''
+-        state_array, action_array, reward_array, logp_old_array, true_state_value_array, advantage_array = replay_buffer.sample(BATCH_SIZE)
+-        # [state, action, reward, logp, true_state_value, advantage]
+-        # state_array = sample_batch[:, 0]
+-        # action_array = sample_batch[:, 1]
+-        # reward_array = sample_batch[:, 2]
+-        # logp_old_array = sample_batch[:, 3]
+-        # true_state_value_array = sample_batch[:, 4]
+-        # advantage_array = sample_batch[:, 5]
+-        # print(state_array.dtype)
++        state_array, action_array, reward_array, logp_old_array, true_state_value_array, advantage_array = replay_buffer.sample(self.batch_size)
++        
+         state_batch = torch.tensor(state_array).float().to(DEVICE)
+         action_batch = torch.tensor(action_array).float().to(DEVICE)
+-        reward_batch = torch.tensor(reward_array).float().to(DEVICE)
++        # reward_batch = torch.tensor(reward_array).float().to(DEVICE)
+         logp_old_batch = torch.tensor(logp_old_array).float().to(DEVICE)
+         true_state_value_batch = torch.tensor(true_state_value_array).float().to(DEVICE)
+         advantage_batch = torch.tensor(advantage_array).float().to(DEVICE)
+         
+         state_value_batch = self.value_net(state_batch)
+         logp_batch = self.policy.logp(state_batch, action_batch)
++        
+         logp_old_batch = logp_old_batch.unsqueeze(1)
+-        ratio_batch = torch.exp(logp_batch - logp_old_batch.unsqueeze(1)) # A/B = exp(logA - logB)
++        true_state_value_batch = true_state_value_batch.unsqueeze(1)
++        advantage_batch = advantage_batch.unsqueeze(1)
++        # print(logp_old_batch.shape)
++        # print(logp_batch.shape)
++        ratio_batch = torch.exp(logp_batch - logp_old_batch) # A/B = exp(logA - logB)
+         ratio_clip_batch = torch.clamp(ratio_batch, 1 - EPISLON, 1 + EPISLON)
+-
++        # print(logp_batch.shape)
++        # print(logp_old_batch.shape)
+         # define loss
+         # print(logp_old_batch.shape)
+-        true_state_value_batch = true_state_value_batch.unsqueeze(1)
++        
+         # print(logp_batch.shape)
+         value_function_loss = self.mse(state_value_batch, true_state_value_batch)
+         clip_loss = -torch.mean(torch.min(ratio_batch * advantage_batch, ratio_clip_batch * advantage_batch))
++        # print(ratio_batch.shape)
++        # print(advantage_batch.shape)
+         # print(clip_loss)
+-        mu_vector_batch, sigma_vector_batch = self.policy(state_batch)
++        # mu_vector_batch, sigma_vector_batch = self.policy(state_batch)
+         # state_entropy_batch = torch.mean(torch.distributions.normal.Normal(mu_vector_batch, sigma_vector_batch).entropy())
+         # print(true_state_value_batch)
+-        state_entropy_batch = logp_batch
++        state_entropy_batch = -logp_batch*torch.exp(logp_batch)
+         entropy_loss = -torch.mean(state_entropy_batch)
+         actor_loss = clip_loss + ENTROPY_COEFF*entropy_loss
+         # print(actor_loss)
+         # print(entropy_loss)
+         critic_loss = VF_COEFF*value_function_loss
++        wandb.log({'clip_loss': clip_loss.item(), 'entropy_loss': ENTROPY_COEFF*entropy_loss.item()})
+ 
+         self.policy_optimizer.zero_grad()
+         actor_loss.backward()
+         for param in self.policy.parameters():
+-                param.grad.data.clamp_(-1, 1)
++            param.grad.data.clamp_(-1, 1)
+         self.policy_optimizer.step()
+ 
+         self.value_net_optimizer.zero_grad()
+         critic_loss.backward()
+         for param in self.value_net.parameters():
+-                param.grad.data.clamp_(-1, 1)
++            param.grad.data.clamp_(-1, 1)
+         self.value_net_optimizer.step()
+         return actor_loss, critic_loss
+         
+diff --git a/ppo_checkpoint_policy b/ppo_checkpoint_policy
+index ea27393..b6319e6 100644
+Binary files a/ppo_checkpoint_policy and b/ppo_checkpoint_policy differ
+diff --git a/ppo_checkpoint_valueNet b/ppo_checkpoint_valueNet
+index 716a53b..e7dce22 100644
+Binary files a/ppo_checkpoint_valueNet and b/ppo_checkpoint_valueNet differ
+diff --git a/replay_buffer.py b/replay_buffer.py
+index 192fcc0..430050c 100644
+--- a/replay_buffer.py
++++ b/replay_buffer.py
+@@ -2,51 +2,54 @@ import numpy as np
+ import random
+ DISCOUNT_FACTOR = 0.99
+ GAE_PARAMETER = 0.95
+-BATCH_SIZE = 256
+-ENV_SIZE = 8
+ class ReplayBuffer(object):
+-    def __init__(self, size):
+-        self.size = size
+-        self.batch_size = BATCH_SIZE
+-        self.env_size = ENV_SIZE
++    def __init__(self, args):
++        self.size = args['horizon']
++        self.batch_size = args['batch_size']
++        self.env_size = args['env_size']
++        self.buffer_extensoin = self.env_size * self.size
++        self.total_legal_length = 0
+         self.current_index = 0
+         self.state_buffer = np.zeros(shape=(self.env_size, self.size, 24))
++        self.next_state_buffer = np.zeros(shape=(self.env_size, self.size, 24))
+         self.action_buffer = np.zeros(shape=(self.env_size, self.size, 4))
+         self.reward_buffer = np.zeros(shape=(self.env_size, self.size))
+         self.state_value_buffer = np.zeros(shape=(self.env_size, self.size))
++        self.next_state_value_buffer = np.zeros(shape=(self.env_size, self.size))
+         self.true_state_value_buffer = np.zeros(shape=(self.env_size, self.size))
+         self.advantage_buffer = np.zeros(shape=(self.env_size, self.size))
+         self.logp_buffer = np.zeros(shape=(self.env_size, self.size)) # for important sampling
+         self.terminate_buffer = np.zeros(shape=(self.env_size, self.size))
+-        self.index_array = [x for x in range(self.size)]
++        # self.index_array = [x for x in range(self.size)]
++
++        self.state_sample_batch_tmp = np.zeros(shape=(self.buffer_extensoin, 24))
++        self.action_sample_batch_tmp = np.zeros(shape=(self.buffer_extensoin, 4))
++        self.reward_sample_batch_tmp = np.zeros(shape=(self.buffer_extensoin))
++        self.logp_sample_batch_tmp = np.zeros(shape=(self.buffer_extensoin))
++        self.true_state_value_sample_batch_tmp = np.zeros(shape=(self.buffer_extensoin))
++        self.advantage_sample_batch_tmp = np.zeros(shape=(self.buffer_extensoin))
+ 
+         self.state_sample_batch = np.zeros(shape=(self.batch_size, 24))
+         self.action_sample_batch = np.zeros(shape=(self.batch_size, 4))
+         self.reward_sample_batch = np.zeros(shape=(self.batch_size))
+-        self.logp_sample_batch = np.zeros(shape=(self.batch_size*self.env_size))
++        self.logp_sample_batch = np.zeros(shape=(self.batch_size))
+         self.true_state_value_sample_batch = np.zeros(shape=(self.batch_size))
+         self.advantage_sample_batch = np.zeros(shape=(self.batch_size))
+ 
+-    def store(self, state, action, logp, reward, state_value, isTerminate):
++    def store(self, state, next_state, action, logp, reward, state_value, next_state_value, isTerminate):
+         for i in range(self.env_size):
+             self.state_buffer[i][self.current_index] = state[i]
++            self.next_state_buffer[i][self.current_index] = next_state[i]
+             self.action_buffer[i][self.current_index] = action[i]
+             self.logp_buffer[i][self.current_index] = logp[i]
+             self.reward_buffer[i][self.current_index] = reward[i]
+             self.state_value_buffer[i][self.current_index] = state_value[i]
+-            self.terminate_buffer[i][self.current_index] = 1 if isTerminate[i] else 0
++            self.next_state_value_buffer[i][self.current_index] = next_state_value[i]
++            self.terminate_buffer[i][self.current_index] = 1 if isTerminate[i]==True else 0
+ 
+         self.current_index = (self.current_index + 1)%self.size
+     def update_true_state_value(self):
+-        # print(self.current_index)
+         discount_factor = DISCOUNT_FACTOR
+-        # print(self.current_index)
+-        # discount_time = 0
+-        # value = 0
+-        # self.true_state_value_buffer = np.zeros(shape=(1, self.size))
+-        
+-        # print(update_index)
+-        # update_index_next = (update_index + 1) % self.size
+         for i in range(self.env_size):
+             update_index = self.size-1
+             for j in range(self.size):
+@@ -69,31 +72,62 @@ class ReplayBuffer(object):
+             update_index = self.size-1
+             for j in range(self.size):
+                 if self.terminate_buffer[i][update_index] == 0 and update_index != self.size-1: 
+-                    # delta_t = r(t) + GAE_PARAMETER*DISCOUNT*V()
+                     delta = self.reward_buffer[i][update_index] + discount_factor * (self.state_value_buffer[i][update_index_next]) - self.state_value_buffer[i][update_index]
+                     self.advantage_buffer[i][update_index] = delta + GAE_PARAMETER * discount_factor * (self.advantage_buffer[i][update_index_next])
+                 else:
+-                    # this is an end state
+-                    # print('hell yeah')
+-                    # exit()
+-                    delta = self.reward_buffer[i][update_index] - self.state_value_buffer[i][update_index]
++                    delta = self.reward_buffer[i][update_index] + discount_factor * self.next_state_value_buffer[i][update_index] - self.state_value_buffer[i][update_index]
+                     self.advantage_buffer[i][update_index] = delta
+                 update_index -= 1
+                 update_index_next = update_index + 1
+-    
++    def merge_trajectory(self):
++        self.total_legal_length = 0
++        for i in range(self.env_size):
++            legal_length = self.size
++            for j in range(self.size):
++                if self.terminate_buffer[i][self.size-1-j] == 0:
++                    legal_length -= 1
++                else:
++                    self.total_legal_length += legal_length
++                    self.state_sample_batch_tmp[self.total_legal_length-legal_length:self.total_legal_length] = self.state_buffer[i][0:legal_length]
++                    self.action_sample_batch_tmp[self.total_legal_length-legal_length:self.total_legal_length] = self.action_buffer[i][0:legal_length]
++                    self.reward_sample_batch_tmp[self.total_legal_length-legal_length:self.total_legal_length] = self.reward_buffer[i][0:legal_length]
++                    self.logp_sample_batch_tmp[self.total_legal_length-legal_length:self.total_legal_length] = self.logp_buffer[i][0:legal_length]
++                    self.true_state_value_sample_batch_tmp[self.total_legal_length-legal_length:self.total_legal_length] = self.true_state_value_buffer[i][0:legal_length]
++                    self.advantage_sample_batch_tmp[self.total_legal_length-legal_length:self.total_legal_length] = self.advantage_buffer[i][0:legal_length]
++                    break
++            # print(legal_length)
++        
++        # print(self.total_legal_length)
++        # if total_legal_length > 3000:
++            # print(total_legal_length)
++        if self.total_legal_length < 256:
++            print(self.total_legal_length)
++            print('gg')
++            exit()
+     def sample(self, batch_size):
+         # [state, action, reward, logp, true_state_value, advantage]
+-        index = int(batch_size / self.env_size)
+-        sample_index = random.sample(self.index_array, index)
++        
+         # sample_batch = np.zeros(shape=(batch_size, 6))
+-        for j in range(self.env_size):
+-            for i, element in enumerate(sample_index):
++        index = batch_size
++        index_array = [x for x in range(self.total_legal_length)]
++        sample_index = random.sample(index_array, index)
++
++        # for j in range(self.env_size):
++            # for i, element in enumerate(sample_index):
+                 # sample_batch[i] = [self.state_buffer[0][element], self.action_buffer[0][element], self.reward_buffer[0][element], self.logp_buffer[0][element], self.true_state_value_buffer[0][element], self.advantage_buffer[0][element]]
+-                self.state_sample_batch[i+j*index] = self.state_buffer[j][element]
+-                self.action_sample_batch[i+j*index] = self.action_buffer[j][element]
+-                self.reward_sample_batch[i+j*index] = self.reward_buffer[j][element]
+-                self.logp_sample_batch[i+j*index] = self.logp_buffer[j][element]
+-                self.true_state_value_sample_batch[i+j*index] = self.true_state_value_buffer[j][element]
+-                self.advantage_sample_batch[i+j*index] = self.advantage_buffer[j][element]
++                # self.state_sample_batch[i+j*index] = self.state_buffer[j][element]
++                # self.action_sample_batch[i+j*index] = self.action_buffer[j][element]
++                # self.reward_sample_batch[i+j*index] = self.reward_buffer[j][element]
++                # self.logp_sample_batch[i+j*index] = self.logp_buffer[j][element]
++                # self.true_state_value_sample_batch[i+j*index] = self.true_state_value_buffer[j][element]
++                # self.advantage_sample_batch[i+j*index] = self.advantage_buffer[j][element]
++                
+         # print(self.state_sample_batch.dtype)
++        for i, element in enumerate(sample_index):
++            self.state_sample_batch[i] = self.state_sample_batch_tmp[element]
++            self.action_sample_batch[i] = self.action_sample_batch_tmp[element]
++            self.reward_sample_batch[i] = self.reward_sample_batch_tmp[element]
++            self.logp_sample_batch[i] = self.logp_sample_batch_tmp[element]
++            self.true_state_value_sample_batch[i] = self.true_state_value_sample_batch_tmp[element]
++            self.advantage_sample_batch[i] = self.advantage_sample_batch_tmp[element]
+         return self.state_sample_batch, self.action_sample_batch, self.reward_sample_batch, self.logp_sample_batch, self.true_state_value_sample_batch, self.advantage_sample_batch
+\ No newline at end of file
+diff --git a/train.py b/train.py
+index 70c1f4a..c31e539 100644
+--- a/train.py
++++ b/train.py
+@@ -3,23 +3,26 @@ import torch
+ from ppo import PPO
+ from replay_buffer import ReplayBuffer
+ import wandb
++import numpy as np
+ torch.cuda.empty_cache()
+-BATCH_SIZE = 16
++# BATCH_SIZE = 16
+ INPUT_DIM = 24
+ ACTION_DIM = 4
+-HORIZON = 128 # = 
+-BUFFER_SIZE = 1024
++HORIZON = 2000 # = 
++BATCH_SIZE = 256
+ EPOCHS = 3
+-ENV_SIZE = 8
+-POLICY_ARGS = {'state_dim': INPUT_DIM, 'action_dim': ACTION_DIM}
++ENV_SIZE = 4
++isTrain = True
+ GPU = torch.cuda.is_available()
+ DEVICE = 'cuda' if GPU else 'cpu'
+ PATH = './ppo_checkpoint'
+ EPISODE = 1000000000
++policy_args = {'state_dim': INPUT_DIM, 'action_dim': ACTION_DIM, 'is_train': isTrain, 'env_size': ENV_SIZE, 'batch_size': BATCH_SIZE, 'horizon': HORIZON}
++
+ wandb.init(project="ppo-atari")
+ env = gym.vector.make('BipedalWalker-v2', ENV_SIZE).unwrapped
+-ppo = PPO(POLICY_ARGS)
+-replay_buffer = ReplayBuffer(HORIZON)
++ppo = PPO(policy_args)
++replay_buffer = ReplayBuffer(policy_args)
+ policy = ppo.policy
+ value_net = ppo.value_net
+ for current_episode in range(EPISODE):
+@@ -32,6 +35,7 @@ for current_episode in range(EPISODE):
+     # sample buffer_size steps
+     state = env.reset()
+     # step = 0
++    average_reward = 0
+     while True:
+         if total_game_step >= HORIZON:
+             # print('gg')
+@@ -40,47 +44,43 @@ for current_episode in range(EPISODE):
+         mu_vector, sigma_vector = policy(state_tensor)
+         # print(mu_vector)
+         action_tensor = policy.act(mu_vector, sigma_vector)
++        # action_tensor_clamp = torch.clamp(action_tensor, -1., 1.)
+         # print(action_tensor.squeeze(0))
+         # print(mu_vector)
+         # exit()
+         next_state, reward, done, _ = env.step(tuple(action_tensor.cpu().numpy()))
+-        # reward_tensor = torch.tensor([reward]).float().to(DEVICE)
+-        # state_value = value_net(state_tensor)
+-        
++        for i in range(4):
++            if done[i] == True:
++                print(done[i])
++                print(next_state[i])
++                state = env.reset()
++                state1 = env.reset()
++                print(state[0])
++                print(state1[0])
++                exit()
+         logp_tensor = policy.logp(state_tensor, action_tensor).detach()
+         # print(logp_tensor)
+         # exit()
+         # print(logp_tensor)
++        next_state_tensor = torch.tensor(next_state).float().to(DEVICE)
+         state_value_tensor = value_net(state_tensor).detach()
+-        # print(reward)
+-        # print(reward)
+-        # print(done)
+-        # exit()
+-        # print(state_value_tensor)
+-        # exit()
+-        replay_buffer.store(state=state_tensor.cpu().numpy(), action=action_tensor.cpu().numpy(), logp=logp_tensor.cpu().numpy(), reward=reward, state_value=state_value_tensor.cpu().numpy(), isTerminate=done)
+-        # tra_reward += reward
+-        # step += 1
+-        # if done:
+-        #     # print('qqq')
+-        #     state = env.reset()
+-        #     # wandb.log({'reward': tra_reward})
+-        #     # print(step)
+-        #     step = 0
+-        #     # print(tra_reward)
+-        #     tra_reward = 0
+-        # else:
++        next_state_value_tensor = value_net(next_state_tensor).detach()
++        
++        average_reward += np.mean(reward)
++        replay_buffer.store(state=state_tensor.cpu().numpy(), next_state=next_state, action=action_tensor.cpu().numpy(), logp=logp_tensor.cpu().numpy(), reward=reward, state_value=state_value_tensor.cpu().numpy(), next_state_value=next_state_value_tensor.cpu().numpy() , isTerminate=done)
++        
+         state = next_state
+         total_game_step += 1
+-        # print(total_game_step)
+-        # exit()
++        
+     # sample finished
++    wandb.log({'average_reward': average_reward})
+     replay_buffer.update_true_state_value()
+     replay_buffer.update_advantage()
++    replay_buffer.merge_trajectory()
+     for epoch in range(EPOCHS):
+         actor_loss, critic_loss =  ppo.update(replay_buffer)
+         wandb.log({'actor_loss': actor_loss.item(), 'critic_loss': critic_loss.item()})
+-        if current_episode % 10 == 0:
++        if current_episode % 100 == 0:
+             print('-------------------------')
+             print('episode: {episode}, actor_loss: {actor_loss}, critic_losss: {critic_losss}' \
+                 .format(episode=current_episode, actor_loss=actor_loss, critic_losss=critic_loss))
+diff --git a/wandb/debug.log b/wandb/debug.log
+index 6368d40..1e5c7bf 100644
+Binary files a/wandb/debug.log and b/wandb/debug.log differ

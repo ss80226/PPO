@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "train.py", line 85, in <module>
+    actor_loss, critic_loss =  ppo.update(replay_buffer)
+  File "/home/ssbl/Desktop/PPO/ppo.py", line 39, in update
+    state_array, action_array, reward_array, logp_old_array, true_state_value_array, advantage_array = replay_buffer.sample(BATCH_SIZE)
+  File "/home/ssbl/Desktop/PPO/replay_buffer.py", line 104, in sample
+    self.state_sample_batch_tmp[total_legal_length-legal_length:total_legal_length] = self.state_buffer[i][0:legal_length]
+ValueError: could not broadcast input array from shape (5108,24) into shape (4096,24)
