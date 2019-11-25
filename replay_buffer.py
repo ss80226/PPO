@@ -1,18 +1,20 @@
 import numpy as np
 import random
-DISCOUNT_FACTOR = 0.8
-GAE_PARAMETER = 0.95
+DISCOUNT_FACTOR = 0.9
+GAE_PARAMETER = 1
 class ReplayBuffer(object):
     def __init__(self, args):
         self.size = args['horizon']
         self.batch_size = args['batch_size']
         self.env_size = args['env_size']
+        self.state_dim = args['state_dim']
+        self.action_dim = args['action_dim']
         self.buffer_extensoin = self.env_size * self.size
         self.total_legal_length = 0
         self.current_index = 0
-        self.state_buffer = np.zeros(shape=(self.env_size, self.size, 24))
-        self.next_state_buffer = np.zeros(shape=(self.env_size, self.size, 24))
-        self.action_buffer = np.zeros(shape=(self.env_size, self.size, 4))
+        self.state_buffer = np.zeros(shape=(self.env_size, self.size, self.state_dim))
+        self.next_state_buffer = np.zeros(shape=(self.env_size, self.size, self.state_dim))
+        self.action_buffer = np.zeros(shape=(self.env_size, self.size, self.action_dim))
         self.reward_buffer = np.zeros(shape=(self.env_size, self.size))
         self.state_value_buffer = np.zeros(shape=(self.env_size, self.size))
         self.next_state_value_buffer = np.zeros(shape=(self.env_size, self.size))
@@ -22,15 +24,15 @@ class ReplayBuffer(object):
         self.terminate_buffer = np.zeros(shape=(self.env_size, self.size))
         # self.index_array = [x for x in range(self.size)]
 
-        self.state_sample_batch_tmp = np.zeros(shape=(self.buffer_extensoin, 24))
-        self.action_sample_batch_tmp = np.zeros(shape=(self.buffer_extensoin, 4))
+        self.state_sample_batch_tmp = np.zeros(shape=(self.buffer_extensoin, self.state_dim))
+        self.action_sample_batch_tmp = np.zeros(shape=(self.buffer_extensoin, self.action_dim))
         self.reward_sample_batch_tmp = np.zeros(shape=(self.buffer_extensoin))
         self.logp_sample_batch_tmp = np.zeros(shape=(self.buffer_extensoin))
         self.true_state_value_sample_batch_tmp = np.zeros(shape=(self.buffer_extensoin))
         self.advantage_sample_batch_tmp = np.zeros(shape=(self.buffer_extensoin))
 
-        self.state_sample_batch = np.zeros(shape=(self.batch_size, 24))
-        self.action_sample_batch = np.zeros(shape=(self.batch_size, 4))
+        self.state_sample_batch = np.zeros(shape=(self.batch_size, self.state_dim))
+        self.action_sample_batch = np.zeros(shape=(self.batch_size, self.action_dim))
         self.reward_sample_batch = np.zeros(shape=(self.batch_size))
         self.logp_sample_batch = np.zeros(shape=(self.batch_size))
         self.true_state_value_sample_batch = np.zeros(shape=(self.batch_size))
@@ -56,7 +58,8 @@ class ReplayBuffer(object):
                 # print(update_index)
                 # exit()
                 if self.terminate_buffer[i][update_index] == 0 and update_index != self.size-1: 
-                    self.true_state_value_buffer[i][update_index] = self.reward_buffer[i][update_index] + discount_factor * (self.true_state_value_buffer[i][update_index_next])
+                    # self.true_state_value_buffer[i][update_index] = self.reward_buffer[i][update_index] + discount_factor * (self.true_state_value_buffer[i][update_index_next])
+                    self.true_state_value_buffer[i][update_index] = self.reward_buffer[i][update_index] + discount_factor * (self.state_value_buffer[i][update_index_next])
                 else:
                     self.true_state_value_buffer[i][update_index] = self.reward_buffer[i][update_index]
                     # print('qq')
@@ -72,10 +75,14 @@ class ReplayBuffer(object):
             update_index = self.size-1
             for j in range(self.size):
                 if self.terminate_buffer[i][update_index] == 0 and update_index != self.size-1: 
-                    delta = self.reward_buffer[i][update_index] + discount_factor * (self.state_value_buffer[i][update_index_next]) - self.state_value_buffer[i][update_index]
-                    self.advantage_buffer[i][update_index] = delta + GAE_PARAMETER * discount_factor * (self.advantage_buffer[i][update_index_next])
+                    # delta = self.reward_buffer[i][update_index] + discount_factor * (self.state_value_buffer[i][update_index_next]) - self.state_value_buffer[i][update_index]
+                    # self.advantage_buffer[i][update_index] = delta + GAE_PARAMETER * discount_factor * (self.advantage_buffer[i][update_index_next])
+                    delta = self.reward_buffer[i][update_index] + discount_factor*self.state_value_buffer[i][update_index_next] - self.state_value_buffer[i][update_index]
+                    self.advantage_buffer[i][update_index] = delta
                 else:
-                    delta = self.reward_buffer[i][update_index] + discount_factor * self.next_state_value_buffer[i][update_index] - self.state_value_buffer[i][update_index]
+                    # delta = self.reward_buffer[i][update_index] - self.state_value_buffer[i][update_index]
+                    # self.advantage_buffer[i][update_index] = delta
+                    delta = self.reward_buffer[i][update_index] - self.state_value_buffer[i][update_index]
                     self.advantage_buffer[i][update_index] = delta
                 update_index -= 1
                 update_index_next = update_index + 1
@@ -94,6 +101,7 @@ class ReplayBuffer(object):
                     self.logp_sample_batch_tmp[self.total_legal_length-legal_length:self.total_legal_length] = self.logp_buffer[i][0:legal_length]
                     self.true_state_value_sample_batch_tmp[self.total_legal_length-legal_length:self.total_legal_length] = self.true_state_value_buffer[i][0:legal_length]
                     self.advantage_sample_batch_tmp[self.total_legal_length-legal_length:self.total_legal_length] = self.advantage_buffer[i][0:legal_length]
+                    # print(self.terminate_buffer[i][legal_length-1])
                     break
             # print(legal_length)
         

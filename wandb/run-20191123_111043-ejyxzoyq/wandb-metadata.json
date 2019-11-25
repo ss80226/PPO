@@ -16,9 +16,10 @@
     "gpu_count": 1,
     "cpu_count": 8,
     "args": [],
-    "state": "running",
+    "state": "killed",
     "jobType": null,
     "mode": "run",
     "project": "ppo-atari",
-    "heartbeatAt": "2019-11-23T12:46:01.487405"
+    "heartbeatAt": "2019-11-23T13:25:39.949895",
+    "exitcode": 255
 }

@@ -1,4 +1,4 @@
 [default]
-project = ppo-atari
+project = ppo-atari-BipedalWalker
 entity = ss80226
 

@@ -21,6 +21,7 @@ class Network(nn.Module):
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = self.outLayer(x)
+        
         # print(x.shape)
         # print(x)
         if self.isTrain == False:
@@ -29,7 +30,7 @@ class Network(nn.Module):
         else:
             mu_vector = x[:, 0:self.action_dim]
             sigma_vector = x[:, self.action_dim:self.action_dim*2]
-        mu_vector = torch.tanh(mu_vector)
+        mu_vector = F.softsign(mu_vector)
         # print(mu_vector)
         sigma_vector = F.softplus(sigma_vector)
         
@@ -53,6 +54,50 @@ class Network(nn.Module):
         # print(logp_joint)
         # print(logp_joint)
         return logp_joint
+
+class Network_discrete(nn.Module):
+    '''
+    input: observation space with dimension (24,)
+    output: mean & standard_deviation for each action dimension (4, )  and one state_value
+    '''
+    def __init__(self, args):
+        super(Network_discrete, self).__init__()
+        self.action_dim = 6
+        self.state_dim = args['state_dim']
+        self.isTrain = args['is_train']
+        self.fc1 = nn.Linear(args['state_dim'], 256)
+        self.fc2 = nn.Linear(256, 128)
+        if args['is_train']:
+            self.softmax = nn.Softmax(dim = 1)
+        else:
+            self.softmax = nn.Softmax(dim = 0)
+        self.outLayer = nn.Linear(128, self.action_dim) # action_dim * (mean, standard_deviation)
+    def forward(self, x):
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = self.outLayer(x)
+        softmax_vector = self.softmax(x)
+        return softmax_vector
+    def act(self, state):
+        '''
+        input: (1, action_dim) mean vecotor
+               (1, action_dim) standard_deviation vector
+        output: (1, action_dim) action vector
+        '''
+        # action_vector = torch.distributions.normal.Normal(mu_vector, sigma_vector).sample()
+        # action_vector = torch.clamp(action_vector, -1., 1.) # clipping value into the a ~ (action_space.low, action_space.high)
+        # print()
+        softmax_vector = self.forward(state)
+        action = torch.distributions.categorical.Categorical(softmax_vector).sample()
+        return action
+    def logp(self, state, action):
+        softmax_vector = self.forward(state)
+        log_prob = torch.distributions.categorical.Categorical(softmax_vector).log_prob(action)
+        return log_prob
+    def entropy(self, state):
+        softmax_vector = self.forward(state)
+        entropy = torch.distributions.categorical.Categorical(softmax_vector).entropy()
+        return entropy
 # class LSTM(nn.Module):
     # def __init__(self, args):
     #     super(LSTM, self).__init__()
@@ -124,12 +169,11 @@ class ValueNet(nn.Module):
         super(ValueNet, self).__init__()
         self.state_dim = args['state_dim']
         self.fc1 = nn.Linear(self.state_dim, 256)
-        self.fc2 = nn.Linear(256, 128)
-        self.fc3 = nn.Linear(128, 64)
-        self.fc4 = nn.Linear(64, 1)
+        self.fc2 = nn.Linear(256, 64)
+        self.fc3 = nn.Linear(64, 1)
+        # self.fc4 = nn.Linear(64, 1)
     def forward(self, x):
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
-        x = F.relu(self.fc3(x))
-        x = self.fc4(x)
-        return x
+        x = self.fc3(x)
+        return x 
